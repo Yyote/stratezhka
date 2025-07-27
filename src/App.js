@@ -1,51 +1,75 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import MainMenu from './components/MainMenu/MainMenu';
 import MapEditor from './components/MapEditor/MapEditor';
 import Game from './components/Game/Game';
 import TilesetCreator from './components/TilesetCreator/TilesetCreator';
-import { TilesetProvider, TilesetContext } from './context/TilesetContext';
+import { TilesetProvider, TilesetContext, initializeDefaultTileset } from './context/TilesetContext';
+import { NotificationProvider } from './context/NotificationContext';
 import './App.css';
 
-// Create a new inner component to access the context
-const AppContent = () => {
+function App() {
   const [mode, setMode] = useState('main_menu');
   const [mapData, setMapData] = useState(null);
-  const { isLoading: isTilesetLoading } = useContext(TilesetContext); // Get loading state
+  const [tileset, setTileset] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handleStartGame = (loadedMapData) => {
+  // Load the default tileset on initial app load
+  useEffect(() => {
+    const loadInitialData = async () => {
+      setIsLoading(true);
+      const defaultTileset = await initializeDefaultTileset();
+      setTileset(defaultTileset);
+      setIsLoading(false);
+    };
+    loadInitialData();
+  }, []);
+
+  const handleStartGame = (loadedMapData, loadedTileset) => {
     setMapData(loadedMapData);
+    setTileset(loadedTileset);
     setMode('playing');
   };
 
-  const handleReturnToMenu = () => {
+  const handleReturnToMenu = async () => {
+    setIsLoading(true);
     setMode('main_menu');
+    setMapData(null);
+    const defaultTileset = await initializeDefaultTileset();
+    setTileset(defaultTileset);
+    setIsLoading(false);
+  };
+  
+  const renderContent = () => {
+    if (isLoading) {
+      return <div className="loading-screen"><h1>Loading...</h1></div>;
+    }
+    
+    switch (mode) {
+      case 'editor':
+        return <MapEditor onReturnToMenu={handleReturnToMenu} />;
+      case 'playing':
+        // ==========================================================
+        // THE FIX: Correct the typo from onReturnTouMenu to onReturnToMenu
+        // ==========================================================
+        return <Game mapData={mapData} onReturnToMenu={handleReturnToMenu} />;
+      case 'tileset_creator':
+        return <TilesetCreator onReturnToMenu={handleReturnToMenu} />;
+      case 'main_menu':
+      default:
+        return <MainMenu onStartGame={handleStartGame} setMode={setMode} setTileset={setTileset} />;
+    }
   };
 
-  // Show a global loading screen if the tileset isn't ready
-  if (isTilesetLoading) {
-    return <div className="loading-screen"><h1>Loading Assets...</h1></div>;
-  }
+  const contextValue = { tileset, isLoading };
 
-  switch (mode) {
-    case 'editor':
-      return <MapEditor onReturnToMenu={handleReturnToMenu} />;
-    case 'playing':
-      return <Game mapData={mapData} onReturnToMenu={handleReturnToMenu} />;
-    case 'tileset_creator':
-      return <TilesetCreator onReturnToMenu={handleReturnToMenu} />;
-    case 'main_menu':
-    default:
-      return <MainMenu onStartGame={handleStartGame} setMode={setMode} />;
-  }
-}
-
-function App() {
   return (
-    <TilesetProvider>
-      <div className="App">
-        <AppContent />
-      </div>
-    </TilesetProvider>
+    <NotificationProvider>
+      <TilesetContext.Provider value={contextValue}>
+        <div className="App">
+          {renderContent()}
+        </div>
+      </TilesetContext.Provider>
+    </NotificationProvider>
   );
 }
 

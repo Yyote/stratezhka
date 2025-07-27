@@ -28,3 +28,44 @@
     color: white;
     font-size: 2rem;
 }
+
+/* ================================== */
+/* STYLES FOR NOTIFICATION POPUP      */
+/* ================================== */
+.notification-popup {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  padding: 15px 25px;
+  border-radius: 8px;
+  color: white;
+  font-size: 1rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  z-index: 9999; /* Ensure it's on top of everything */
+  transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+
+  /* Start hidden and slightly offset */
+  opacity: 0;
+  transform: translateX(20px);
+  pointer-events: none; /* Can't be clicked when hidden */
+}
+
+/* State when the notification is visible */
+.notification-popup.visible {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: all; /* Can be interacted with when visible */
+}
+
+/* Different color schemes based on type */
+.notification-popup.error {
+  background-color: #d32f2f; /* A strong red for errors */
+}
+
+.notification-popup.success {
+  background-color: #388e3c; /* A nice green for success */
+}
+
+.notification-popup.info {
+  background-color: #0288d1; /* A calm blue for info */
+}

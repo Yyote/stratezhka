@@ -1,16 +1,18 @@
-import React, { useState, useMemo, useRef, useContext } from 'react';
+import React, { useState, useMemo, useRef, useContext, useCallback } from 'react';
 import { TilesetContext } from '../../context/TilesetContext';
+import { NotificationContext } from '../../context/NotificationContext';
 import GameGrid from '../GameGrid/GameGrid';
 import MapDisplay from '../MapDisplay/MapDisplay';
 import ActionArrow from '../ActionArrow/ActionArrow';
 import { Xwrapper } from 'react-xarrows';
 import './Game.css';
 
-// We only need the unit texture here now
 import unitTexture from '../../assets/textures/unit.png';
 
 const Game = ({ mapData, onReturnToMenu }) => {
   const { tileset } = useContext(TilesetContext);
+  const { addNotification } = useContext(NotificationContext);
+  
   const [units, setUnits] = useState([]);
   const [nextUnitId, setNextUnitId] = useState(0);
   const [selectedUnit, setSelectedUnit] = useState(null);
@@ -18,11 +20,13 @@ const Game = ({ mapData, onReturnToMenu }) => {
   const [actionTarget, setActionTarget] = useState(null);
 
   const tileMap = useMemo(() => {
+    if (!tileset) return new Map();
     return new Map(tileset.tiles.map(t => [t.type_name, t]));
   }, [tileset]);
 
-  const getNeighbors = (row, col, radius = 1) => {
+  const getNeighbors = useCallback((row, col, radius = 1) => {
     const neighbors = [];
+    if (!mapData) return neighbors;
     for (let r = row - radius; r <= row + radius; r++) {
       for (let c = col - radius; c <= col + radius; c++) {
         if (r === row && c === col) continue;
@@ -32,69 +36,71 @@ const Game = ({ mapData, onReturnToMenu }) => {
       }
     }
     return neighbors;
-  };
+  }, [mapData]);
 
-  const handlePlaceUnit = () => {
-    const grassTileType = tileset.tiles.find(t => t.type_name === 'grass');
-    const defaultTileType = tileset.tiles[0];
-    const placeableTileTypeName = grassTileType ? 'grass' : defaultTileType?.type_name;
+  const handlePlaceUnit = useCallback(() => {
+    if (!tileset || !mapData) return;
+    const placeableTileTypeName = tileset.tiles.find(t => t.ground_passable)?.type_name;
 
     if (!placeableTileTypeName) {
-        alert("Cannot place unit: Tileset has no valid tiles.");
-        return;
+      addNotification("Cannot place unit: Tileset has no ground-passable tiles.");
+      return;
     }
 
+    let placed = false;
     for (let r = 0; r < mapData.height; r++) {
       for (let c = 0; c < mapData.width; c++) {
         const isOccupied = units.some(u => u.row === r && u.col === c);
         if (mapData.grid[r][c] === placeableTileTypeName && !isOccupied) {
           const newUnit = { id: nextUnitId, row: r, col: c };
-          setUnits([...units, newUnit]);
-          setNextUnitId(nextUnitId + 1);
+          setUnits(prevUnits => [...prevUnits, newUnit]);
+          setNextUnitId(id => id + 1);
+          placed = true;
           return;
         }
       }
     }
-    alert(`No available "${placeableTileTypeName}" tiles to place a unit!`);
-  };
 
-  const handleCellClick = (row, col) => {
-    if (actionMode) {
+    if (!placed) {
+      addNotification(`No available "${placeableTileTypeName}" tiles to place a unit!`);
+    }
+  }, [tileset, mapData, units, nextUnitId, addNotification]);
+
+  const handleCellClick = useCallback((row, col) => {
+    if (actionMode && selectedUnit) {
       const neighbors = getNeighbors(selectedUnit.row, selectedUnit.col);
-      const isTargetable = neighbors.some(n => n.row === row && n.col === col);
-      if (isTargetable) {
+      if (neighbors.some(n => n.row === row && n.col === col)) {
         setActionTarget({ row, col, type: actionMode });
         setActionMode(null);
       }
       return;
     }
-
     const clickedUnit = units.find(u => u.row === row && u.col === col);
     setSelectedUnit(clickedUnit || null);
-  };
+    setActionTarget(null);
+  }, [actionMode, selectedUnit, units, getNeighbors]);
 
-  const handleAction = (mode) => {
+  const handleAction = useCallback((mode) => {
     setActionMode(mode);
-  };
+  }, []);
 
-  const handleDismissAction = () => {
-    if (!actionTarget) return;
+  const handleDismissAction = useCallback(() => {
+    if (!actionTarget || !selectedUnit) return;
 
     if (actionTarget.type === 'moving') {
       const targetTileName = mapData.grid[actionTarget.row][actionTarget.col];
       const targetTileType = tileMap.get(targetTileName);
       
-      if (!targetTileType || !targetTileType.ground_passable) {
-        alert("Cannot move there! The terrain is impassable.");
+      if (!targetTileType?.ground_passable) {
+        addNotification("Cannot move there! The terrain is impassable.");
       } else {
         const targetIsOccupied = units.some(u => u.row === actionTarget.row && u.col === actionTarget.col);
         if (targetIsOccupied) {
-          alert("Cannot move to an occupied tile!");
+          addNotification("Cannot move to an occupied tile!");
         } else {
-          const newUnits = units.map(u =>
+          setUnits(prevUnits => prevUnits.map(u =>
             u.id === selectedUnit.id ? { ...u, row: actionTarget.row, col: actionTarget.col } : u
-          );
-          setUnits(newUnits);
+          ));
         }
       }
     } else if (actionTarget.type === 'attacking') {
@@ -103,10 +109,10 @@ const Game = ({ mapData, onReturnToMenu }) => {
 
     setActionTarget(null);
     setSelectedUnit(null);
-  };
+  }, [actionTarget, selectedUnit, units, mapData, tileMap, addNotification]);
 
   const textureGrid = useMemo(() => {
-    if (!mapData || !mapData.grid) return [];
+    if (!mapData || !tileMap) return [];
     return mapData.grid.map(row =>
       row.map(tileTypeName => ({ texture: tileMap.get(tileTypeName)?.textureUrl || null }))
     );
@@ -121,7 +127,7 @@ const Game = ({ mapData, onReturnToMenu }) => {
       tints[`${n.row}-${n.col}`] = color;
     });
     return tints;
-  }, [selectedUnit, actionMode]);
+  }, [selectedUnit, actionMode, getNeighbors]);
 
   const arrowData = useMemo(() => {
     if (!actionTarget || !selectedUnit) return null;
@@ -148,13 +154,11 @@ const Game = ({ mapData, onReturnToMenu }) => {
         <h2>Controls</h2>
         <button onClick={handlePlaceUnit}>Place Unit</button>
       </div>
-
       <div className="game-main-area">
         <div className="game-header">
           <h1>Playing: {mapData.name}</h1>
           <button onClick={onReturnToMenu}>Exit to Main Menu</button>
         </div>
-
         <div className="game-viewport-wrapper">
           <Xwrapper SVGcanvasStyle={{ position: 'absolute', top: 0, left: 0, zIndex: 10, pointerEvents: 'none' }}>
             <MapDisplay>
@@ -170,7 +174,6 @@ const Game = ({ mapData, onReturnToMenu }) => {
           </Xwrapper>
         </div>
       </div>
-
       {selectedUnit && (
         <div className="action-menu" style={{ position: 'absolute', left: '50%', bottom: '50px', transform: 'translateX(-50%)' }}>
           {!actionMode && !actionTarget && (
