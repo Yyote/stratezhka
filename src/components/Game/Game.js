@@ -18,6 +18,7 @@ const Game = ({ mapData, onReturnToMenu }) => {
   const [selectedUnit, setSelectedUnit] = useState(null);
   const [actionMode, setActionMode] = useState(null);
   const [actionTarget, setActionTarget] = useState(null);
+  const [isPlacingUnit, setIsPlacingUnit] = useState(false); // New state for placement mode
 
   const tileMap = useMemo(() => {
     if (!tileset) return new Map();
@@ -38,35 +39,38 @@ const Game = ({ mapData, onReturnToMenu }) => {
     return neighbors;
   }, [mapData]);
 
-  const handlePlaceUnit = useCallback(() => {
-    if (!tileset || !mapData) return;
-    const placeableTileTypeName = tileset.tiles.find(t => t.ground_passable)?.type_name;
+  const handlePlaceUnitClick = () => {
+    if (selectedUnit) {
+      setSelectedUnit(null);
+      setActionTarget(null);
+      setActionMode(null);
+    }
+    setIsPlacingUnit(prev => !prev);
+  };
 
-    if (!placeableTileTypeName) {
-      addNotification("Cannot place unit: Tileset has no ground-passable tiles.");
+  const handleCellClick = useCallback((row, col) => {
+    if (isPlacingUnit) {
+      const targetTileName = mapData.grid[row][col];
+      const targetTileType = tileMap.get(targetTileName);
+
+      if (!targetTileType?.ground_passable) {
+        addNotification("Cannot place a unit on impassable terrain.");
+        return;
+      }
+      
+      const isOccupied = units.some(u => u.row === row && u.col === col);
+      if (isOccupied) {
+        addNotification("Cannot place a unit on an occupied tile.");
+        return;
+      }
+
+      const newUnit = { id: nextUnitId, row, col };
+      setUnits(prevUnits => [...prevUnits, newUnit]);
+      setNextUnitId(id => id + 1);
+      setIsPlacingUnit(false); // Exit placement mode automatically
       return;
     }
 
-    let placed = false;
-    for (let r = 0; r < mapData.height; r++) {
-      for (let c = 0; c < mapData.width; c++) {
-        const isOccupied = units.some(u => u.row === r && u.col === c);
-        if (mapData.grid[r][c] === placeableTileTypeName && !isOccupied) {
-          const newUnit = { id: nextUnitId, row: r, col: c };
-          setUnits(prevUnits => [...prevUnits, newUnit]);
-          setNextUnitId(id => id + 1);
-          placed = true;
-          return;
-        }
-      }
-    }
-
-    if (!placed) {
-      addNotification(`No available "${placeableTileTypeName}" tiles to place a unit!`);
-    }
-  }, [tileset, mapData, units, nextUnitId, addNotification]);
-
-  const handleCellClick = useCallback((row, col) => {
     if (actionMode && selectedUnit) {
       const neighbors = getNeighbors(selectedUnit.row, selectedUnit.col);
       if (neighbors.some(n => n.row === row && n.col === col)) {
@@ -75,10 +79,11 @@ const Game = ({ mapData, onReturnToMenu }) => {
       }
       return;
     }
+
     const clickedUnit = units.find(u => u.row === row && u.col === col);
     setSelectedUnit(clickedUnit || null);
     setActionTarget(null);
-  }, [actionMode, selectedUnit, units, getNeighbors]);
+  }, [isPlacingUnit, actionMode, selectedUnit, units, getNeighbors, mapData, tileMap, addNotification, nextUnitId]);
 
   const handleAction = useCallback((mode) => {
     setActionMode(mode);
@@ -149,10 +154,15 @@ const Game = ({ mapData, onReturnToMenu }) => {
   }
 
   return (
-    <div className="game-container">
+    <div className={`game-container ${isPlacingUnit ? 'placing-mode' : ''}`}>
       <div className="game-controls-panel">
         <h2>Controls</h2>
-        <button onClick={handlePlaceUnit}>Place Unit</button>
+        <button
+          onClick={handlePlaceUnitClick}
+          className={isPlacingUnit ? 'active' : ''}
+        >
+          {isPlacingUnit ? 'Cancel Placement' : 'Place Unit'}
+        </button>
       </div>
       <div className="game-main-area">
         <div className="game-header">

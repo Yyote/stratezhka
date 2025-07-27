@@ -103,3 +103,20 @@
   background-color: #61dafb;
   color: #282c34;
 }
+
+
+/* ====================================================== */
+/* NEW: Styles for Placement Mode                         */
+/* ====================================================== */
+
+/* When in placement mode, change the cursor over the map to a crosshair */
+.game-container.placing-mode .map-display-viewport {
+  cursor: crosshair;
+}
+
+/* Style for the "Place Unit" button when it is active */
+.game-controls-panel button.active {
+  background-color: #61dafb; /* A highlight color from the theme */
+  color: #282c34;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+}
