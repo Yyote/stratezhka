@@ -4,19 +4,17 @@
   border: 1px solid #ccc;
   background-size: cover;
   background-position: center;
-  position: relative; /* This is crucial for the overlay positioning */
+  position: relative;
   cursor: pointer;
-  flex-shrink: 0; /* <--- ADD THIS LINE */
+  flex-shrink: 0;
 }
 
-/* This is the new style for the tint overlay */
 .cell-overlay {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  /* Adds a smooth fade effect when the color changes */
   transition: background-color 0.15s ease-in-out;
 }
 
@@ -26,7 +24,52 @@
   left: 0;
   width: 100%;
   height: 100%;
-  object-fit: contain; /* Ensures the unit sprite fits within the cell */
-  pointer-events: none; /* Allows clicks to go through to the cell div */
-  z-index: 5; /* Makes sure unit is above texture but below overlay */
+  object-fit: contain;
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* ====================================================== */
+/* NEW: Styles for Cities and Flags                       */
+/* ====================================================== */
+.city-marker {
+  position: absolute;
+  width: 60%;
+  height: 60%;
+  top: 20%;
+  left: 20%;
+  border-radius: 50%;
+  border: 2px solid white;
+  opacity: 0.85;
+  box-shadow: 0 0 5px rgba(0,0,0,0.5);
+  pointer-events: none;
+}
+
+.flag-container {
+  position: absolute;
+  bottom: 2px;
+  left: 2px;
+  display: flex;
+  gap: 3px;
+  pointer-events: none;
+}
+
+.player-flag {
+  width: 0;
+  height: 0;
+  border-left: 6px solid var(--player-color);
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  position: relative;
+}
+
+.player-flag::before { /* The flagpole */
+  content: '';
+  position: absolute;
+  left: -8px; /* Adjusted for centering */
+  bottom: -4px;
+  width: 2px;
+  height: 12px;
+  background-color: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 2px black;
 }

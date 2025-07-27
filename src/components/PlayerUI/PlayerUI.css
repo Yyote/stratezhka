@@ -4,18 +4,43 @@
   left: 0;
   width: 100%;
   padding: 15px 30px;
-  background-color: rgba(40, 44, 52, 0.9);
-  border-top: 2px solid #61dafb;
+  background-color: rgba(40, 44, 52, 0.95);
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  align-items: center; /* Vertically align items */
   z-index: 1000;
+  box-sizing: border-box;
+  /* ======================================================== */
+  /* THE FIX: Remove space-between, add gap for general spacing */
+  /* ======================================================== */
+  gap: 30px;
 }
+
+.player-info h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    white-space: nowrap; /* Prevent player name from wrapping */
+}
+
 .player-actions {
   display: flex;
   gap: 15px;
+  /* ======================================================== */
+  /* THE FIX: This pushes the actions group to the far right */
+  /* ======================================================== */
+  margin-left: auto; 
 }
+
+.player-actions button {
+    padding: 10px 20px;
+    font-size: 1rem;
+    cursor: pointer;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    white-space: nowrap; /* Prevent button text from wrapping */
+}
+
 .finish-turn-btn {
   background-color: #4CAF50;
   color: white;
+  border-color: #388E3C;
 }
