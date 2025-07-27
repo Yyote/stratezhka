@@ -11,6 +11,7 @@
   box-shadow: 2px 0 5px rgba(0,0,0,0.1);
   overflow-y: auto;
   text-align: left;
+  flex-shrink: 0; /* Prevents the panel from shrinking */
 }
 
 .editor-controls h2, .editor-controls h4 {

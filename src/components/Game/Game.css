@@ -1,0 +1,105 @@
+/* Change the overall layout to be horizontal */
+.game-container {
+  display: flex;
+  flex-direction: row; /* <-- CHANGED */
+  height: 100vh;
+  width: 100vw;
+  background-color: #282c34;
+  color: white;
+}
+
+/* ================================================= */
+/* NEW: Styles for the left-side panel               */
+/* ================================================= */
+.game-controls-panel {
+  width: 250px;
+  flex-shrink: 0; /* Prevents the panel from shrinking */
+  padding: 20px;
+  background-color: #20232a;
+  box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+  overflow-y: auto;
+  text-align: left;
+}
+
+.game-controls-panel h2 {
+  text-align: center;
+  color: #61dafb;
+  margin-top: 0;
+}
+
+.game-controls-panel button {
+  width: 100%;
+  padding: 10px;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-bottom: 10px;
+  background-color: #4a5160;
+  color: white;
+  border: 1px solid #61dafb;
+  border-radius: 5px;
+}
+
+/* ================================================= */
+/* NEW: Wrapper for the main content area            */
+/* ================================================= */
+.game-main-area {
+  flex-grow: 1; /* Takes up the remaining space */
+  display: flex;
+  flex-direction: column;
+  min-width: 0; /* Prevents flexbox overflow issues */
+}
+
+/* Header no longer needs to control global layout */
+.game-header {
+  padding: 10px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #20232a;
+  flex-shrink: 0; 
+}
+
+.game-header h1 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.game-header button {
+    padding: 8px 16px;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+/* Viewport takes up remaining space inside the main area */
+.game-viewport-wrapper {
+  flex-grow: 1;
+  position: relative;
+  margin: 20px;
+  border: 2px solid #61dafb;
+  min-height: 0; 
+}
+
+/* Action Menu styles remain the same */
+.action-menu {
+  padding: 10px;
+  background-color: rgba(40, 44, 52, 0.9);
+  border: 1px solid #61dafb;
+  border-radius: 8px;
+  display: flex;
+  gap: 10px;
+  z-index: 100;
+}
+
+.action-menu button {
+  background-color: #4a5160;
+  color: white;
+  border: 1px solid #61dafb;
+  padding: 8px 16px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.action-menu button:hover {
+  background-color: #61dafb;
+  color: #282c34;
+}

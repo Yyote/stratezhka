@@ -6,6 +6,7 @@
   background-position: center;
   position: relative; /* This is crucial for the overlay positioning */
   cursor: pointer;
+  flex-shrink: 0; /* <--- ADD THIS LINE */
 }
 
 /* This is the new style for the tint overlay */
@@ -17,4 +18,15 @@
   height: 100%;
   /* Adds a smooth fade effect when the color changes */
   transition: background-color 0.15s ease-in-out;
+}
+
+.unit-sprite {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* Ensures the unit sprite fits within the cell */
+  pointer-events: none; /* Allows clicks to go through to the cell div */
+  z-index: 5; /* Makes sure unit is above texture but below overlay */
 }

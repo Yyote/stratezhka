@@ -1,28 +1,13 @@
 import React, { useState } from 'react';
 import './Cell.css';
 
-const Cell = ({ texture, editorMode, onClick }) => {
+const Cell = ({ id, texture, unitTexture, tint, onClick }) => {
   const [isHovering, setIsHovering] = useState(false);
 
-  // In editor mode, we just call the passed onClick function (for painting)
-  // In play mode, we could add different logic (e.g. selecting a unit)
-  const handleClick = (e) => {
-    e.preventDefault();
-    if (onClick) {
-      onClick(); // The parent (Editor or Game) decides what this does
-    }
-  };
-
-  const handleMouseEnter = () => {
-    setIsHovering(true);
-  };
-
-  const handleMouseLeave = () => {
-    setIsHovering(false);
-  };
-
-  // The hover tint should only apply in "play" mode, not while editing.
-  const overlayColor = isHovering && !editorMode ? 'rgba(255, 255, 255, 0.5)' : 'transparent';
+  // The overlay color is now determined by the tint prop passed from Game.js
+  const overlayColor = tint
+    ? (tint === 'blue' ? 'rgba(100, 149, 237, 0.5)' : 'rgba(255, 99, 71, 0.5)')
+    : (isHovering ? 'rgba(255, 255, 255, 0.3)' : 'transparent');
 
   const cellStyle = {
     backgroundImage: `url(${texture})`,
@@ -35,14 +20,15 @@ const Cell = ({ texture, editorMode, onClick }) => {
 
   return (
     <div
+      id={id} // Set the ID for the arrow to attach to
       className="cell"
       style={cellStyle}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      // We use onMouseDown for painting to allow for a "click and drag" feel
-      onMouseDown={handleClick}
-      onContextMenu={(e) => e.preventDefault()} // Prevent context menu in both modes
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => setIsHovering(false)}
+      onClick={onClick}
     >
+      {/* Render unit on top of the cell texture */}
+      {unitTexture && <img src={unitTexture} className="unit-sprite" alt="unit" />}
       <div className="cell-overlay" style={overlayStyle}></div>
     </div>
   );

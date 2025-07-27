@@ -17,3 +17,14 @@
     text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
   }
 }
+
+/* Added for the initial asset loading */
+.loading-screen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background-color: #282c34;
+    color: white;
+    font-size: 2rem;
+}
