@@ -1,23 +1,21 @@
-import React, { createContext } from 'react';
+import React, { createContext, useState, useCallback, useEffect } from 'react';
 import JSZip from 'jszip';
 
-// Import default textures for the initialization helper
 import defaultGrassPath from '../assets/textures/grass.png';
 import defaultWaterPath from '../assets/textures/water.png';
 import defaultMountainPath from '../assets/textures/mountain.png';
 
 export const TilesetContext = createContext();
 
-/**
- * UTILITY FUNCTION: Initializes the default tileset by fetching local assets.
- * This is now an exportable helper function, not tied to the provider's state.
- */
 export const initializeDefaultTileset = async () => {
   try {
     const defaultTiles = [
-      { name: "grass", path: defaultGrassPath, props: { ground_passable: true, air_passable: true, water_passable: false } },
-      { name: "water", path: defaultWaterPath, props: { ground_passable: false, air_passable: true, water_passable: true } },
-      { name: "mountain", path: defaultMountainPath, props: { ground_passable: false, air_passable: true, water_passable: false } }
+      // ==========================================================
+      // CHANGE #1: Replaced water_passable with the two new attributes
+      // ==========================================================
+      { name: "grass", path: defaultGrassPath, props: { ground_passable: true, air_passable: true, overwater_passable: false, underwater_passable: false } },
+      { name: "water", path: defaultWaterPath, props: { ground_passable: false, air_passable: true, overwater_passable: true, underwater_passable: true } },
+      { name: "mountain", path: defaultMountainPath, props: { ground_passable: false, air_passable: true, overwater_passable: false, underwater_passable: false } }
     ];
 
     const processedTiles = await Promise.all(
@@ -37,14 +35,10 @@ export const initializeDefaultTileset = async () => {
     return { name: "Default", tiles: processedTiles };
   } catch (error) {
     console.error("Failed to initialize default tileset:", error);
-    return { name: "Error", tiles: [] }; // Return an empty but valid object on failure
+    return { name: "Error", tiles: [] };
   }
 };
 
-/**
- * UTILITY FUNCTION: Loads a tileset from a .szts blob.
- * Returns the new tileset data instead of setting state directly.
- */
 export const loadTilesetFromZip = async (zipFile) => {
   try {
     const zip = await JSZip.loadAsync(zipFile);
@@ -70,6 +64,6 @@ export const loadTilesetFromZip = async (zipFile) => {
     return { name: manifest.name, tiles: tilesWithData };
   } catch (error) {
     alert(`Failed to load tileset: ${error.message}`);
-    throw error; // Re-throw the error so the caller can handle it
+    throw error;
   }
 };

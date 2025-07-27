@@ -33,7 +33,11 @@ const TileEditorCard = ({ tile, onUpdate, onRemove }) => {
         <div className="passability-flags">
           <label><input type="checkbox" checked={tile.ground_passable} onChange={(e) => onUpdate({ ...tile, ground_passable: e.target.checked })} /> Ground</label>
           <label><input type="checkbox" checked={tile.air_passable} onChange={(e) => onUpdate({ ...tile, air_passable: e.target.checked })} /> Air</label>
-          <label><input type="checkbox" checked={tile.water_passable} onChange={(e) => onUpdate({ ...tile, water_passable: e.target.checked })} /> Water</label>
+          {/* ====================================================== */}
+          {/* CHANGE #2: Replaced single Water checkbox with two new ones */}
+          {/* ====================================================== */}
+          <label><input type="checkbox" checked={tile.overwater_passable} onChange={(e) => onUpdate({ ...tile, overwater_passable: e.target.checked })} /> Overwater</label>
+          <label><input type="checkbox" checked={tile.underwater_passable} onChange={(e) => onUpdate({ ...tile, underwater_passable: e.target.checked })} /> Underwater</label>
         </div>
       </div>
       <button className="remove-tile-btn" onClick={onRemove}>×</button>
@@ -47,6 +51,9 @@ const TilesetCreator = ({ onReturnToMenu }) => {
   const [nextId, setNextId] = useState(0);
 
   const handleAddTile = () => {
+    // ==========================================================
+    // CHANGE #3: New tile defaults use the new attributes
+    // ==========================================================
     const newTile = {
       id: nextId,
       type_name: `new_tile_${nextId}`,
@@ -55,7 +62,8 @@ const TilesetCreator = ({ onReturnToMenu }) => {
       textureUrl: null,
       ground_passable: true,
       air_passable: true,
-      water_passable: false,
+      overwater_passable: false,
+      underwater_passable: false,
     };
     setTiles([...tiles, newTile]);
     setNextId(nextId + 1);
@@ -81,7 +89,6 @@ const TilesetCreator = ({ onReturnToMenu }) => {
       if (tile.textureFile) {
         assetsFolder.file(tile.texture_path, tile.textureFile);
       }
-      // Strip temporary/local properties before saving to manifest
       const { id, textureFile, textureUrl, ...manifestTile } = tile;
       return manifestTile;
     });
@@ -94,7 +101,7 @@ const TilesetCreator = ({ onReturnToMenu }) => {
     zip.file("manifest.json", JSON.stringify(manifest, null, 2));
 
     const zipBlob = await zip.generateAsync({ type: "blob" });
-    saveAs(zipBlob, `${tilesetName}.szts`); // Changed extension
+    saveAs(zipBlob, `${tilesetName}.szts`);
   };
 
   return (

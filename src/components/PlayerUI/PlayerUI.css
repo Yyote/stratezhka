@@ -1,0 +1,21 @@
+.player-ui-container {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 15px 30px;
+  background-color: rgba(40, 44, 52, 0.9);
+  border-top: 2px solid #61dafb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 1000;
+}
+.player-actions {
+  display: flex;
+  gap: 15px;
+}
+.finish-turn-btn {
+  background-color: #4CAF50;
+  color: white;
+}
