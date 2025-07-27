@@ -1,0 +1,44 @@
+.main-menu-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background-color: #282c34;
+  color: white;
+}
+
+.game-title {
+  font-size: 5rem;
+  font-weight: bold;
+  color: #61dafb;
+  animation: pulsate 3s infinite ease-in-out;
+}
+
+.menu-buttons {
+  margin-top: 50px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.menu-buttons button {
+  font-size: 1.5rem;
+  padding: 15px 30px;
+  border: 2px solid #61dafb;
+  background-color: transparent;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.menu-buttons button:hover:not(:disabled) {
+  background-color: #61dafb;
+  color: #282c34;
+}
+
+.menu-buttons button:disabled {
+  border-color: #555;
+  color: #777;
+  cursor: not-allowed;
+}

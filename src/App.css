@@ -1,0 +1,19 @@
+.App {
+  text-align: center;
+}
+
+/* Pulsating animation for the title */
+@keyframes pulsate {
+  0% {
+    transform: scale(1);
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+  }
+  50% {
+    transform: scale(1.05);
+    text-shadow: 0 0 20px rgba(255, 255, 255, 1);
+  }
+  100% {
+    transform: scale(1);
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+  }
+}

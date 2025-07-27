@@ -1,0 +1,9 @@
+.game-grid {
+  display: flex;
+  flex-direction: column;
+  border: 2px solid #333;
+}
+
+.grid-row {
+  display: flex;
+}
