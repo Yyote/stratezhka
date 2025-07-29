@@ -6,6 +6,8 @@ import TilesetCreator from './components/TilesetCreator/TilesetCreator';
 import GameSetup from './components/GameSetup/GameSetup';
 import { TilesetProvider, TilesetContext, initializeDefaultTileset } from './context/TilesetContext';
 import { NotificationProvider } from './context/NotificationContext';
+import ResourceCreator from './components/ResourceCreator/ResourceCreator'; // <-- NEW
+
 import './App.css';
 
 function App() {
@@ -13,7 +15,7 @@ function App() {
   const [mapData, setMapData] = useState(null);
   const [tileset, setTileset] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [gameSettings, setGameSettings] = useState(null); // { playerCount: number } | null
+  const [gameSettings, setGameSettings] = useState(null);
 
   useEffect(() => {
     const loadInitialData = async () => {
@@ -29,14 +31,11 @@ function App() {
     setMode('setup');
   };
   
-  // This function is called from GameSetup
-  const handleCompleteSetup = (playerCount) => {
-    setGameSettings({ playerCount });
-    // THE FIX: Go back to the main menu, which will now be in a "select map" state
-    setMode('main_menu'); 
+  const handleCompleteSetup = (players) => {
+    setGameSettings({ players });
+    setMode('main_menu');
   };
 
-  // This function is called from MainMenu after a map is selected
   const handleStartGameWithMap = (loadedMapData, loadedTileset) => {
     setMapData(loadedMapData);
     setTileset(loadedTileset);
@@ -47,7 +46,7 @@ function App() {
     setIsLoading(true);
     setMode('main_menu');
     setMapData(null);
-    setGameSettings(null); // Reset game settings
+    setGameSettings(null);
     const defaultTileset = await initializeDefaultTileset();
     setTileset(defaultTileset);
     setIsLoading(false);
@@ -64,7 +63,6 @@ function App() {
       case 'editor':
         return <MapEditor onReturnToMenu={handleReturnToMenu} />;
       case 'playing':
-        // Ensure both map and settings are ready before starting game
         if (!mapData || !gameSettings) {
             return (
                 <div className="loading-screen">
@@ -76,6 +74,9 @@ function App() {
         return <Game mapData={mapData} gameSettings={gameSettings} onReturnToMenu={handleReturnToMenu} />;
       case 'tileset_creator':
         return <TilesetCreator onReturnToMenu={handleReturnToMenu} />;
+      case 'resource_creator': // <-- NEW
+        return <ResourceCreator onReturnToMenu={handleReturnToMenu} />;
+
       case 'main_menu':
       default:
         return <MainMenu 
@@ -83,7 +84,6 @@ function App() {
             onStartGameWithMap={handleStartGameWithMap} 
             setMode={setMode} 
             setTileset={setTileset}
-            // Let the main menu know if it should be asking for a map
             isAwaitingMap={!!gameSettings}
         />;
     }

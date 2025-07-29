@@ -1,19 +1,15 @@
-/* Change the overall layout to be horizontal */
 .game-container {
   display: flex;
-  flex-direction: row; /* <-- CHANGED */
+  flex-direction: row;
   height: 100vh;
   width: 100vw;
   background-color: #282c34;
   color: white;
 }
 
-/* ================================================= */
-/* NEW: Styles for the left-side panel               */
-/* ================================================= */
 .game-controls-panel {
   width: 250px;
-  flex-shrink: 0; /* Prevents the panel from shrinking */
+  flex-shrink: 0;
   padding: 20px;
   background-color: #20232a;
   box-shadow: 2px 0 5px rgba(0,0,0,0.1);
@@ -37,19 +33,16 @@
   color: white;
   border: 1px solid #61dafb;
   border-radius: 5px;
+  transition: background-color 0.2s, color 0.2s;
 }
 
-/* ================================================= */
-/* NEW: Wrapper for the main content area            */
-/* ================================================= */
 .game-main-area {
-  flex-grow: 1; /* Takes up the remaining space */
+  flex-grow: 1;
   display: flex;
   flex-direction: column;
-  min-width: 0; /* Prevents flexbox overflow issues */
+  min-width: 0;
 }
 
-/* Header no longer needs to control global layout */
 .game-header {
   padding: 10px 20px;
   display: flex;
@@ -70,7 +63,6 @@
     cursor: pointer;
 }
 
-/* Viewport takes up remaining space inside the main area */
 .game-viewport-wrapper {
   flex-grow: 1;
   position: relative;
@@ -79,7 +71,6 @@
   min-height: 0; 
 }
 
-/* Action Menu styles remain the same */
 .action-menu {
   padding: 10px;
   background-color: rgba(40, 44, 52, 0.9);
@@ -104,19 +95,45 @@
   color: #282c34;
 }
 
-
 /* ====================================================== */
-/* NEW: Styles for Placement Mode                         */
+/* Styles for Setup and Placing Modes                     */
 /* ====================================================== */
 
-/* When in placement mode, change the cursor over the map to a crosshair */
+/* City placement in SETUP phase */
+.game-container.setup-mode .map-display-viewport {
+  cursor: pointer;
+}
+
+/* Unit placement in PLANNING phase */
 .game-container.placing-mode .map-display-viewport {
   cursor: crosshair;
 }
 
-/* Style for the "Place Unit" button when it is active */
+.setup-overlay {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 20px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  text-align: center;
+  z-index: 1000;
+  border-top: 2px solid #61dafb;
+}
+
+.setup-overlay h2 {
+  margin-top: 0;
+  color: #61dafb;
+}
+
+.setup-overlay p {
+  margin-bottom: 0;
+  font-size: 1.2rem;
+}
+
 .game-controls-panel button.active {
-  background-color: #61dafb; /* A highlight color from the theme */
+  background-color: #61dafb;
   color: #282c34;
   box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
 }

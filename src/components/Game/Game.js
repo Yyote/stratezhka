@@ -9,7 +9,8 @@ import CellDetailsMenu from '../CellDetailsMenu/CellDetailsMenu';
 import { Xwrapper } from 'react-xarrows';
 import './Game.css';
 
-// Helpers
+import unitTexture from '../../assets/textures/unit.png';
+
 const generatePlayerColors = (count) => {
   const colors = [];
   for (let i = 0; i < count; i++) {
@@ -38,66 +39,180 @@ const Game = ({ mapData, gameSettings, onReturnToMenu }) => {
   const [selectedUnit, setSelectedUnit] = useState(null);
   const [plannedAction, setPlannedAction] = useState(null);
 
-  // Game Setup Effect
   useEffect(() => {
-    if (gameSettings && mapData) {
-      const { playerCount } = gameSettings;
+    if (gameSettings && gameSettings.players && mapData) {
+      const playersFromSettings = gameSettings.players;
+      const playerCount = playersFromSettings.length;
       const playerColors = generatePlayerColors(playerCount);
-      const newPlayers = Array.from({ length: playerCount }, (_, i) => ({
-        id: i,
-        name: `Player ${i + 1}`,
+      const newPlayers = playersFromSettings.map((player, i) => ({
+        ...player,
         color: playerColors[i],
         isTurnFinished: false,
       }));
       setPlayers(newPlayers);
-      
       const initialActionQueue = newPlayers.reduce((acc, p) => ({ ...acc, [p.id]: [] }), {});
       setActionQueue(initialActionQueue);
-
-      setGamePhase('PLANNING');
+      setGamePhase('SETUP');
+      setCurrentPlayerId(0);
     }
   }, [gameSettings, mapData]);
-  
-  // Logic for Planning Phase
+
+  const tileMap = useMemo(() => {
+    if (!tileset) return new Map();
+    return new Map(tileset.tiles.map(t => [t.type_name, t]));
+  }, [tileset]);
+
+  const handleInitiatePlaceUnit = () => {
+    if (plannedAction?.type === 'PLACE_UNIT') {
+      setPlannedAction(null);
+      return;
+    }
+    setSelectedUnit(null);
+    setSelectedCell(null);
+    setPlannedAction({ type: 'PLACE_UNIT' });
+    addNotification("Select one of your cities to queue unit production.", "info");
+  };
+
   const handleCellClick = useCallback((row, col) => {
-    if (plannedAction) {
-        // ... target selection logic here ...
+    if (gamePhase === 'SETUP') {
+      const isOccupied = cities.some(c => c.row === row && c.col === col);
+      if (isOccupied) {
+        addNotification("A city has already been placed here. Choose another location.");
+        return;
+      }
+      const newCity = { id: nextCityId, row, col, playerId: currentPlayerId };
+      setCities(prev => [...prev, newCity]);
+      setNextCityId(id => id + 1);
+      const nextPlayerId = currentPlayerId + 1;
+      if (nextPlayerId >= players.length) {
+        setGamePhase('PLANNING');
+        setCurrentPlayerId(0);
+        addNotification("All cities placed. The planning phase has begun!", "success");
+      } else {
+        setCurrentPlayerId(nextPlayerId);
+      }
+      return;
+    }
+
+    if (plannedAction?.type === 'PLACE_UNIT') {
+      const cityOnCell = cities.find(c => c.row === row && c.col === col);
+      if (cityOnCell && cityOnCell.playerId === currentPlayerId) {
+        const newAction = {
+          type: 'CREATE_UNIT',
+          target: { row, col },
+          id: `action_${Date.now()}`
+        };
+        setActionQueue(prev => ({
+          ...prev,
+          [currentPlayerId]: [...prev[currentPlayerId], newAction]
+        }));
+        addNotification(`Unit queued for production at (${row}, ${col}).`, "success");
+        setPlannedAction(null);
+      } else {
+        addNotification("You can only queue new units in your own cities.");
+      }
+      return;
+    }
+
+    if (plannedAction && plannedAction.unitId) {
+      // Future target selection logic for move/attack
     } else {
         const cellUnits = units.filter(u => u.row === row && u.col === col);
         const cellCity = cities.find(c => c.row === row && c.col === col);
         setSelectedCell({ row, col, units: cellUnits, city: cellCity });
         setSelectedUnit(null);
     }
-  }, [units, cities, plannedAction]);
+  }, [gamePhase, cities, currentPlayerId, players, nextCityId, addNotification, plannedAction, units]);
 
-  const handleUnitSelection = useCallback((unit) => {
-    if (unit.playerId === currentPlayerId) {
-      setSelectedUnit(unit);
-    } else {
-      addNotification("Cannot select another player's unit.", "info");
-    }
-  }, [currentPlayerId, addNotification]);
-  
-  // ... a lot more logic to be added for actions, execution, etc.
-
-  // Hotseat and Turn Logic
   const handleSwitchPlayer = useCallback(() => {
-      setCurrentPlayerId(prev => (prev + 1) % players.length);
-      setSelectedUnit(null);
-      setSelectedCell(null);
-      setPlannedAction(null);
-  }, [players]);
-  
-  const handleFinishTurn = () => { /* ... Execution logic would go here ... */ };
+    // Find the next player who has NOT finished their turn yet
+    let nextPlayerId = (currentPlayerId + 1) % players.length;
+    // Loop to skip players who are already done
+    while (players[nextPlayerId].isTurnFinished && nextPlayerId !== currentPlayerId) {
+      nextPlayerId = (nextPlayerId + 1) % players.length;
+    }
+
+    setCurrentPlayerId(nextPlayerId);
+    setSelectedUnit(null);
+    setSelectedCell(null);
+    setPlannedAction(null);
+  }, [players, currentPlayerId]);
+
+  const handleFinishTurn = () => {
+    // Mark the current player as having finished their turn
+    const updatedPlayers = players.map(p =>
+      p.id === currentPlayerId ? { ...p, isTurnFinished: true } : p
+    );
+    setPlayers(updatedPlayers);
+
+    // Check if all players are now finished
+    const allFinished = updatedPlayers.every(p => p.isTurnFinished);
+
+    if (allFinished) {
+      // If everyone is done, move to the execution phase
+      setGamePhase('EXECUTING');
+      addNotification("All players have finished. Executing actions...", "info");
+      // In a real game, you would start processing the actionQueue here
+    } else {
+      // If not, automatically switch to the next available player
+      addNotification(`${players[currentPlayerId].name} finished their turn. Switching to next player.`, "info");
+      handleSwitchPlayer(); // This will find the next player who isn't finished
+    }
+    // Reset selections
+    setSelectedUnit(null);
+    setSelectedCell(null);
+    setPlannedAction(null);
+  };
 
   if (gamePhase === 'LOADING' || !mapData) {
       return <div className="loading-screen"><h1>Loading Map...</h1></div>;
   }
   
+  const renderPhaseSpecificUI = () => {
+    if (gamePhase === 'SETUP') {
+      const currentPlayer = players[currentPlayerId];
+      if (!currentPlayer) return null;
+      return (
+        <div className="setup-overlay">
+          <h2>Setup Phase</h2>
+          <p>Player <span style={{ color: currentPlayer.color }}>{currentPlayer.name}</span>, place your starting city.</p>
+        </div>
+      );
+    }
+    if (gamePhase === 'PLANNING') {
+      return (
+        <>
+            <PlayerUI players={players} currentPlayerId={currentPlayerId} onFinishTurn={handleFinishTurn} onSwitchPlayer={handleSwitchPlayer} />
+            <CellDetailsMenu cellData={selectedCell} players={players} onSelectUnit={() => {}} onClose={() => setSelectedCell(null)} />
+             {selectedUnit && ( <div className="action-menu"> {/* Placeholder */} </div> )}
+        </>
+      );
+    }
+    if (gamePhase === 'EXECUTING') {
+        return (
+          <div className="setup-overlay">
+            <h2>Executing Actions...</h2>
+            {/* This is where you would show the results of the turn */}
+          </div>
+        );
+    }
+    return null;
+  };
+  
   return (
-    <div className="game-container">
+    <div className={`game-container ${gamePhase === 'SETUP' ? 'setup-mode' : ''} ${plannedAction?.type === 'PLACE_UNIT' ? 'placing-mode' : ''}`}>
         <div className="game-controls-panel">
-            {/* Placeholder for future controls like "Place City" */}
+          {gamePhase === 'PLANNING' && (
+            <>
+              <h2>Controls</h2>
+              <button
+                onClick={handleInitiatePlaceUnit}
+                className={plannedAction?.type === 'PLACE_UNIT' ? 'active' : ''}
+              >
+                {plannedAction?.type === 'PLACE_UNIT' ? 'Cancel Placement' : 'Place Unit'}
+              </button>
+            </>
+          )}
         </div>
         
         <div className="game-main-area">
@@ -119,14 +234,7 @@ const Game = ({ mapData, gameSettings, onReturnToMenu }) => {
             </div>
         </div>
         
-        <PlayerUI players={players} currentPlayerId={currentPlayerId} onFinishTurn={handleFinishTurn} onSwitchPlayer={handleSwitchPlayer} />
-        <CellDetailsMenu cellData={selectedCell} players={players} onSelectUnit={handleUnitSelection} onClose={() => setSelectedCell(null)} />
-        
-        {selectedUnit && (
-             <div className="action-menu" style={{ position: 'fixed', left: '50%', bottom: '80px', transform: 'translateX(-50%)' }}>
-                {/* ... Action buttons will be rendered here based on state */}
-             </div>
-        )}
+        {renderPhaseSpecificUI()}
     </div>
   );
 };

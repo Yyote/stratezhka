@@ -68,6 +68,8 @@ const MainMenu = ({ onStartHotseat, onStartGameWithMap, setMode, setTileset, isA
                 <hr/>
                 <button onClick={() => setMode('editor')}>Create a Map</button>
                 <button onClick={() => setMode('tileset_creator')}>Tileset Creator</button>
+                <button onClick={() => setMode('resource_creator')}>Resource Editor</button> {/* <-- NEW */}
+
                 <button onClick={() => tilesetInputRef.current.click()}>
                 Import Tileset (.szts)
                 </button>

@@ -1,0 +1,40 @@
+/* Generic styles for all creator screens */
+.creator-container { display: flex; height: 100vh; background-color: #f0f0f0; }
+.creator-panel {
+  width: 300px;
+  padding: 20px;
+  background-color: #fff;
+  box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+  flex-shrink: 0;
+  text-align: left;
+}
+.creator-list { flex-grow: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
+
+/* Card styles */
+.creator-card { background-color: #fff; border: 1px solid #ddd; border-radius: 8px; }
+.creator-card-header { display: flex; justify-content: space-between; align-items: center; background-color: #f7f7f7; padding: 10px 15px; border-bottom: 1px solid #ddd; }
+.type-id-input { font-size: 1.2em; font-weight: bold; border: none; background: none; }
+.remove-btn {
+  position: absolute;
+  top: 5px;
+  right: 10px;
+  border: none;
+  background: transparent;
+  font-size: 1.5rem;
+  color: #aaa;
+  cursor: pointer;
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  line-height: 20px;
+  text-align: center;
+}
+.creator-card-body { padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+.creator-card-body h4 { margin: 10px 0 5px 0; }
+.creator-card-body textarea { width: 100%; min-height: 60px; }
+
+/* Specific styles for Resource Creator */
+.checkbox-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 5px; }
+.possibility-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+.possibility-input { display: flex; align-items: center; gap: 5px; }
+.possibility-input label { font-weight: bold; }
