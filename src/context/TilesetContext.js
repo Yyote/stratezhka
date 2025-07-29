@@ -31,6 +31,7 @@ export const TilesetProvider = ({ children }) => {
     }
   }, []);
 
+  // This useEffect handles the INITIAL loading screen correctly.
   useEffect(() => {
     const loadInitialData = async () => {
       setIsLoading(true);
@@ -42,7 +43,9 @@ export const TilesetProvider = ({ children }) => {
   }, [initializeDefaultTileset]);
 
   const loadTilesetFromZip = useCallback(async (zipFile) => {
-    setIsLoading(true);
+    // THE FIX: Do NOT set the global loading state here.
+    // The user knows they are waiting because they just clicked a button.
+    // setIsLoading(true); // <-- REMOVE THIS LINE
     try {
       const zip = await JSZip.loadAsync(zipFile);
       const manifestFile = zip.file("manifest.json");
@@ -59,12 +62,17 @@ export const TilesetProvider = ({ children }) => {
           return { ...tile, textureUrl, textureBlob };
         })
       );
-      setTileset({ name: manifest.name, tiles: tilesWithData });
+      const newTileset = { name: manifest.name, tiles: tilesWithData };
+      setTileset(newTileset);
+      return newTileset;
     } catch (error) {
       alert(`Failed to load tileset: ${error.message}`);
-    } finally {
-      setIsLoading(false);
-    }
+      return null;
+    } 
+    // THE FIX: And do not set it to false here.
+    // finally {
+    //   setIsLoading(false); // <-- REMOVE THIS BLOCK
+    // }
   }, []);
 
   const resetToDefault = useCallback(async () => {
