@@ -1,5 +1,10 @@
-/* Generic styles for all creator screens */
-.creator-container { display: flex; height: 100vh; background-color: #f0f0f0; }
+.creator-container {
+  display: flex;
+  height: 100vh;
+  background-color: #f0f0f0;
+  color: #333;
+}
+
 .creator-panel {
   width: 300px;
   padding: 20px;
@@ -8,33 +13,143 @@
   flex-shrink: 0;
   text-align: left;
 }
-.creator-list { flex-grow: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
+.creator-panel input {
+    width: 100%;
+    padding: 8px;
+    box-sizing: border-box;
+    margin-bottom: 15px;
+}
+.creator-panel button {
+    width: 100%;
+    padding: 10px;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+.creator-panel .return-button {
+    background-color: #f44336;
+    color: white;
+    border: none;
+}
 
-/* Card styles */
-.creator-card { background-color: #fff; border: 1px solid #ddd; border-radius: 8px; }
-.creator-card-header { display: flex; justify-content: space-between; align-items: center; background-color: #f7f7f7; padding: 10px 15px; border-bottom: 1px solid #ddd; }
-.type-id-input { font-size: 1.2em; font-weight: bold; border: none; background: none; }
+.creator-list {
+  flex-grow: 1;
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.creator-card {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.creator-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  background-color: #f7f7f7;
+  padding: 10px 15px;
+  border-bottom: 1px solid #ddd;
+}
+
+.type-id-input {
+  font-size: 1.2em;
+  font-weight: bold;
+  border: none;
+  background: none;
+  flex-grow: 1;
+}
+
+.creator-card-texture {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.creator-card-texture img {
+    height: 30px;
+    width: 30px;
+    object-fit: cover;
+    border: 1px solid #ccc;
+}
+
 .remove-btn {
-  position: absolute;
-  top: 5px;
-  right: 10px;
   border: none;
   background: transparent;
   font-size: 1.5rem;
   color: #aaa;
   cursor: pointer;
   padding: 0;
-  width: 20px;
-  height: 20px;
-  line-height: 20px;
-  text-align: center;
 }
-.creator-card-body { padding: 15px; display: flex; flex-direction: column; gap: 10px; }
-.creator-card-body h4 { margin: 10px 0 5px 0; }
-.creator-card-body textarea { width: 100%; min-height: 60px; }
+.remove-btn:hover { color: #f44336; }
 
-/* Specific styles for Resource Creator */
-.checkbox-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 5px; }
-.possibility-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
-.possibility-input { display: flex; align-items: center; gap: 5px; }
-.possibility-input label { font-weight: bold; }
+.creator-card-body {
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ================================== */
+/* NEW: Style for the display name input */
+/* ================================== */
+.display-name-input {
+    width: 100%;
+    padding: 8px;
+    box-sizing: border-box;
+    font-size: 1.1em;
+    font-weight: 500;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.creator-card-body h4 {
+  margin: 10px 0 5px 0;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 5px;
+}
+
+.creator-card-body textarea {
+  width: 100%;
+  min-height: 60px;
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+}
+
+.checkbox-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 8px;
+}
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.possibility-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+}
+
+.possibility-input {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.possibility-input label {
+  font-weight: bold;
+  flex-basis: 80px;
+}
+.possibility-input input {
+    width: 100%;
+    padding: 5px;
+}

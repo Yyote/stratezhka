@@ -7,13 +7,11 @@ export class Resource extends TemplatableObject {
   constructor(template) {
     super(template.TypeId);
 
-    // REMOVED: The requiresResearch attribute to break the dependency cycle.
-    // this.requiresResearch = template.requiresResearch || [];
+    /** @type {string} - The user-friendly display name */
+    this.name = template.name || "Unnamed Resource";
 
     this.texture = template.texture_path;
-    // A list of tile TypeIds where this resource can spawn.
     this.canBeOn = template.canBeOn || [];
-    // An object mapping tile TypeIds to their spawn chance (0.0 to 1.0).
     this.possibility = template.possibility || {};
     this.description = template.description || "";
   }

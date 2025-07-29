@@ -120,3 +120,10 @@
 .remove-tile-btn:hover {
     color: #f44336;
 }
+/* ... keep all existing styles ... */
+/* Add this new style at the end */
+
+.button-group {
+    display: flex;
+    gap: 10px;
+}

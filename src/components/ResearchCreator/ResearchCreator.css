@@ -1,0 +1,67 @@
+/* Re-use the generic styles from the Resource Creator for consistency */
+@import url('../ResourceCreator/ResourceCreator.css');
+
+.display-name-input {
+    width: 100%;
+    padding: 8px;
+    box-sizing: border-box;
+    font-size: 1.1em;
+}
+
+.cost-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background-color: #f0f0f0;
+    padding: 10px;
+    border-radius: 4px;
+}
+
+.cost-entry {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.cost-entry select {
+    flex-grow: 1;
+    padding: 5px;
+    border-radius: 3px;
+    border: 1px solid #ccc;
+}
+
+.cost-entry input {
+    width: 80px;
+    padding: 5px;
+    border-radius: 3px;
+    border: 1px solid #ccc;
+}
+
+.remove-cost-btn {
+    background-color: #f44336;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    font-weight: bold;
+    line-height: 24px;
+    padding: 0;
+}
+.remove-cost-btn:hover {
+    background-color: #d32f2f;
+}
+
+.add-cost-btn {
+    margin-top: 5px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 8px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.add-cost-btn:hover {
+    background-color: #388E3C;
+}

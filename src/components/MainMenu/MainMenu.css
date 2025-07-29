@@ -15,21 +15,30 @@
   animation: pulsate 3s infinite ease-in-out;
 }
 
+.subtitle {
+    font-size: 1.2rem;
+    color: #ccc;
+    margin-top: -20px;
+}
+
 .menu-buttons {
   margin-top: 50px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 15px;
+  width: 100%;
+  max-width: 400px;
 }
 
 .menu-buttons button {
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   padding: 15px 30px;
   border: 2px solid #61dafb;
   background-color: transparent;
   color: white;
   cursor: pointer;
   transition: all 0.3s ease;
+  border-radius: 5px;
 }
 
 .menu-buttons button:hover:not(:disabled) {
@@ -41,4 +50,63 @@
   border-color: #555;
   color: #777;
   cursor: not-allowed;
+}
+
+.menu-buttons hr {
+    border: none;
+    border-top: 1px solid #4a5160;
+    margin: 5px 0;
+}
+
+/* ====================================================== */
+/* THE FIX: Changed to fixed positioning for bottom-left  */
+/* ====================================================== */
+.current-sets-indicator {
+  position: fixed; /* Lifts the element out of the document flow */
+  bottom: 20px;    /* Pins it 20px from the bottom */
+  left: 20px;      /* Pins it 20px from the left */
+
+  width: 100%;
+  max-width: 350px; /* A bit smaller for a corner element */
+  border: 1px solid #61dafb;
+  border-radius: 8px;
+  padding: 15px 20px;
+  background-color: rgba(0, 0, 0, 0.3);
+  box-sizing: border-box;
+  backdrop-filter: blur(5px); /* Adds a nice "frosty glass" effect */
+  text-align: left; /* Align text to the left for a cleaner look */
+}
+
+.current-sets-indicator h3 {
+  margin-top: 0;
+  text-align: center;
+  color: white;
+  margin-bottom: 10px;
+  font-size: 1.2rem;
+}
+
+.set-info, .set-info-disabled {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  font-size: 1rem;
+}
+
+.set-info {
+  border-top: 1px solid #4a5160;
+}
+
+.set-info strong {
+  color: #61dafb;
+  font-weight: 500;
+}
+
+.set-info-disabled {
+  color: #888;
+  border-top: 1px solid #4a5160;
+}
+
+.set-info-disabled strong {
+  font-weight: 400;
 }

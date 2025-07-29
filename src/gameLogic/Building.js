@@ -17,6 +17,10 @@ export class Building extends TemplatableObject {
     this.remaining_turns_to_build = template.build_time || 1;
 
     // --- Constants from template ---
+    
+    /** @type {string} - The user-friendly display name */
+    this.name = template.name || "Unnamed Building";
+
     this.requiresResearch = template.requiresResearch || [];
     this.texture = template.texture_path;
     this.land_positioned = template.land_positioned || false;
@@ -32,8 +36,6 @@ export class Building extends TemplatableObject {
     this.gives_attack_bonus = template.gives_attack_bonus || 0;
     this.gives_defense_bonus = template.gives_defense_bonus || 0;
     this.can_research = template.can_research || [];
-
-    // NEW: Specifies the resource TypeId this building can extract.
     this.canMine = template.canMine || null;
   }
 }
