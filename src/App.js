@@ -5,10 +5,15 @@ import Game from './components/Game/Game';
 import TilesetCreator from './components/TilesetCreator/TilesetCreator';
 import ResourceCreator from './components/ResourceCreator/ResourceCreator';
 import ResearchCreator from './components/ResearchCreator/ResearchCreator';
+import UnitsetCreator from './components/UnitsetCreator/UnitsetCreator';
+import BuildingsetCreator from './components/BuildingsetCreator/BuildingsetCreator';
 import GameSetup from './components/GameSetup/GameSetup';
 import { TilesetProvider, TilesetContext } from './context/TilesetContext';
 import { NotificationProvider } from './context/NotificationContext';
 import { ResourceSetProvider } from './context/ResourceSetContext';
+import { ResearchSetProvider } from './context/ResearchSetContext'; // Import new
+import { UnitsetProvider } from './context/UnitsetContext';
+import { BuildingsetProvider } from './context/BuildingsetContext';
 import './App.css';
 
 const AppContent = () => {
@@ -29,7 +34,7 @@ const AppContent = () => {
     setMode('main_menu');
     setMapData(null);
     setGameSettings(null);
-    await resetTileset(); // Reset the global tileset
+    await resetTileset();
   };
 
   if (isTilesetLoading) {
@@ -41,17 +46,14 @@ const AppContent = () => {
     case 'editor': return <MapEditor onReturnToMenu={handleReturnToMenu} />;
     case 'playing':
       if (!mapData || !gameSettings) {
-        return (
-          <div className="loading-screen">
-            <h1>Error: Game started with incomplete settings.</h1>
-            <button onClick={handleReturnToMenu}>Return to Menu</button>
-          </div>
-        );
+        return ( <div className="loading-screen"> <h1>Error: Game started with incomplete settings.</h1> <button onClick={handleReturnToMenu}>Return to Menu</button> </div> );
       }
       return <Game mapData={mapData} gameSettings={gameSettings} onReturnToMenu={handleReturnToMenu} />;
     case 'tileset_creator': return <TilesetCreator onReturnToMenu={handleReturnToMenu} />;
     case 'resource_creator': return <ResourceCreator onReturnToMenu={handleReturnToMenu} />;
     case 'research_creator': return <ResearchCreator onReturnToMenu={handleReturnToMenu} />;
+    case 'unitset_creator': return <UnitsetCreator onReturnToMenu={handleReturnToMenu} />;
+    case 'buildingset_creator': return <BuildingsetCreator onReturnToMenu={handleReturnToMenu} />;
     case 'main_menu':
     default:
       return <MainMenu onStartHotseat={handleStartHotseatSetup} onStartGameWithMap={handleStartGameWithMap} setMode={setMode} isAwaitingMap={!!gameSettings} />;
@@ -63,9 +65,15 @@ function App() {
     <NotificationProvider>
       <TilesetProvider>
         <ResourceSetProvider>
-          <div className="App">
-            <AppContent />
-          </div>
+          <ResearchSetProvider>
+            <UnitsetProvider>
+              <BuildingsetProvider>
+                <div className="App">
+                  <AppContent />
+                </div>
+              </BuildingsetProvider>
+            </UnitsetProvider>
+          </ResearchSetProvider>
         </ResourceSetProvider>
       </TilesetProvider>
     </NotificationProvider>

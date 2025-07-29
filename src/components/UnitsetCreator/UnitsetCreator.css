@@ -1,0 +1,33 @@
+/* Re-use the generic styles for consistency */
+@import url('../ResourceCreator/ResourceCreator.css');
+
+.grid-input-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 15px; /* row gap, column gap */
+    align-items: center;
+}
+
+.grid-input-group label {
+    font-weight: bold;
+    text-align: right;
+}
+
+.grid-input-group input {
+    width: 100%;
+    padding: 5px;
+    box-sizing: border-box;
+}
+
+.checkbox-grid-4-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 10px;
+}
+
+.creator-card-body h4 {
+    margin: 15px 0 8px 0;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 5px;
+    font-size: 1.1em;
+}

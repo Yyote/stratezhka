@@ -1,0 +1,3 @@
+/* Re-use the generic styles for consistency */
+@import url('../ResourceCreator/ResourceCreator.css');
+@import url('../UnitsetCreator/UnitsetCreator.css'); /* Reuse grid styles etc. */

@@ -66,12 +66,37 @@ const ResearchCreator = ({ onReturnToMenu }) => {
   const handleRemove = (id) => { setResearches(researches.filter(r => r.id !== id)); };
 
   const handleExport = async () => {
-    if (!setName) { alert("Please provide a set name."); return; }
-    const zip = new JSZip();
-    const manifestResearches = researches.map(res => { const { id, ...manifestData } = res; return manifestData; });
-    const manifest = { name: setName, researches: manifestResearches };
-    zip.file("manifest.json", JSON.stringify(manifest, null, 2));
-    const zipBlob = await zip.generateAsync({ type: "blob" });
+    // THE FIX: Check for dependency and then bundle it into the archive.
+    if (!resourceSet || resourceSet.name === 'None') {
+      alert("A Resource Set must be loaded before exporting a Research Set.");
+      return;
+    }
+    if (!setName) {
+      alert("Please provide a set name.");
+      return;
+    }
+
+    const researchZip = new JSZip();
+
+    // Step 1: Create the dependency archive (resourceset.szrs) in memory.
+    const resourceZip = new JSZip();
+    const resourceManifest = { name: resourceSet.name, resources: resourceSet.resources };
+    resourceZip.file("manifest.json", JSON.stringify(resourceManifest, null, 2));
+    const resourceSetBlob = await resourceZip.generateAsync({ type: "blob" });
+
+    // Step 2: Add the dependency blob to the main zip.
+    researchZip.file("resourceset.szrs", resourceSetBlob);
+
+    // Step 3: Add the research manifest to the main zip.
+    const manifestResearches = researches.map(res => {
+        const { id, ...manifestData } = res;
+        return manifestData;
+    });
+    const researchManifest = { name: setName, researches: manifestResearches };
+    researchZip.file("manifest.json", JSON.stringify(researchManifest, null, 2));
+
+    // Step 4: Generate and save the final .szrsh file.
+    const zipBlob = await researchZip.generateAsync({ type: "blob" });
     saveAs(zipBlob, `${setName}.szrsh`);
   };
 
