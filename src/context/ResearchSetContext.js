@@ -14,7 +14,6 @@ export const ResearchSetProvider = ({ children }) => {
     try {
       const zip = await JSZip.loadAsync(zipFile);
       
-      // Load dependency: Resource Set
       const resourceSetFile = zip.file("resourceset.szrs");
       if (resourceSetFile) {
         const blob = await resourceSetFile.async("blob");
@@ -23,7 +22,6 @@ export const ResearchSetProvider = ({ children }) => {
         throw new Error("Archive is missing its dependency: resourceset.szrs");
       }
 
-      // Load the research set manifest
       const manifestFile = zip.file("manifest.json");
       if (!manifestFile) throw new Error("manifest.json not found in research set.");
       const manifest = JSON.parse(await manifestFile.async("string"));

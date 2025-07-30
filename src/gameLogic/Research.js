@@ -10,5 +10,6 @@ export class Research extends TemplatableObject {
     this.cost = template.cost || [];
     this.name = template.name || "Unnamed Research";
     this.description = template.description || "";
+    this.requiresResearch = template.requiresResearch || []; // NEW PROPERTY
   }
 }

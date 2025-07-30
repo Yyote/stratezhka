@@ -17,12 +17,10 @@ export class Unit extends TemplatableObject {
     this.defense_bonus = 0;
     this.carrier_carried_hp = 0;
     this.remaining_turns_to_build = template.build_time || 1;
+    this.move_actions = template.max_move_actions || 1; // Feature 3: Instance variable
 
     // --- Constants from template ---
-    
-    /** @type {string} - The user-friendly display name */
     this.name = template.name || "Unnamed Unit";
-
     this.texture = template.texture_path;
     this.requiresResearch = template.requiresResearch || [];
     this.land_traversing = template.land_traversing || false;
@@ -31,7 +29,7 @@ export class Unit extends TemplatableObject {
     this.underwater_traversing = template.underwater_traversing || false;
     this.cost = template.cost || [];
     this.build_time = template.build_time || 1;
-    this.movement_radius = template.movement_radius || 0;
+    this.max_move_actions = template.max_move_actions || 1; // Feature 3: Replaces movement_radius
     this.min_attack_distance = template.min_attack_distance || 0;
     this.max_attack_distance = template.max_attack_distance || 1;
     this.attack = template.attack || 1;
@@ -42,5 +40,6 @@ export class Unit extends TemplatableObject {
     this.can_carry_type_air = template.can_carry_type_air || false;
     this.can_carry_type_overwater = template.can_carry_type_overwater || false;
     this.can_carry_type_underwater = template.can_carry_type_underwater || false;
+    this.isColonist = template.isColonist || false; // Feature 4
   }
 }

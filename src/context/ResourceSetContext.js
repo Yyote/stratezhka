@@ -3,7 +3,6 @@ import JSZip from 'jszip';
 
 export const ResourceSetContext = createContext();
 
-// A default empty set to prevent the app from crashing before one is loaded.
 const DEFAULT_RESOURCESET = {
   name: "None",
   resources: [],
@@ -26,8 +25,6 @@ export const ResourceSetProvider = ({ children }) => {
       const manifestContent = await manifestFile.async("string");
       const manifest = JSON.parse(manifestContent);
 
-      // We don't need texture blobs here, just the manifest data.
-      // Other creators that depend on this will use the data.
       setResourceSet({ name: manifest.name, resources: manifest.resources || [] });
 
     } catch (error) {

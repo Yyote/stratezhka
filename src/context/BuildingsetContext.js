@@ -2,7 +2,7 @@ import React, { createContext, useState, useCallback, useContext } from 'react';
 import JSZip from 'jszip';
 import { ResourceSetContext } from './ResourceSetContext';
 import { UnitsetContext } from './UnitsetContext';
-import { ResearchSetContext } from './ResearchSetContext'; // Import new dependency
+import { ResearchSetContext } from './ResearchSetContext';
 
 export const BuildingsetContext = createContext();
 
@@ -12,13 +12,12 @@ export const BuildingsetProvider = ({ children }) => {
   const [buildingSet, setBuildingSet] = useState(DEFAULT_BUILDINGSET);
   const { loadResourceSetFromZip } = useContext(ResourceSetContext);
   const { loadUnitsetFromZip } = useContext(UnitsetContext);
-  const { loadResearchSetFromZip } = useContext(ResearchSetContext); // Get the loader
+  const { loadResearchSetFromZip } = useContext(ResearchSetContext);
 
   const loadBuildingsetFromZip = useCallback(async (zipFile) => {
     try {
       const zip = await JSZip.loadAsync(zipFile);
       
-      // Load all dependencies from the archive
       const resourceSetFile = zip.file("resourceset.szrs");
       if(resourceSetFile) await loadResourceSetFromZip(await resourceSetFile.async("blob"));
       else throw new Error("Archive missing dependency: resourceset.szrs");
@@ -27,7 +26,6 @@ export const BuildingsetProvider = ({ children }) => {
       if(unitSetFile) await loadUnitsetFromZip(await unitSetFile.async("blob"));
       else throw new Error("Archive missing dependency: unitset.szus");
 
-      // THE FIX: Load the research set dependency
       const researchSetFile = zip.file("researchset.szrsh");
       if(researchSetFile) {
           await loadResearchSetFromZip(await researchSetFile.async("blob"));
@@ -35,7 +33,6 @@ export const BuildingsetProvider = ({ children }) => {
           throw new Error("Archive missing dependency: researchset.szrsh");
       }
 
-      // Load the building manifest
       const manifestFile = zip.file("manifest.json");
       if (!manifestFile) throw new Error("manifest.json not found in building set.");
       const manifest = JSON.parse(await manifestFile.async("string"));

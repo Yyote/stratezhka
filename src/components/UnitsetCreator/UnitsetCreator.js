@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useRef } from 'react';
 import { saveAs } from 'file-saver';
 import JSZip from 'jszip';
 import { ResourceSetContext } from '../../context/ResourceSetContext';
@@ -78,6 +78,11 @@ const UnitEditorCard = ({ unit, onUpdate, onRemove, availableResources, availabl
                     <input type="file" id={`unit-tex-${unit.id}`} style={{ display: 'none' }} onChange={handleFileChange} accept="image/png" />
                 </div>
 
+                <h4>Special Flags</h4>
+                <div className="checkbox-grid">
+                    <label><input type="checkbox" checked={unit.isColonist} onChange={(e) => handleCheckboxChange('isColonist', e.target.checked)} /> Is a Colonist</label>
+                </div>
+
                 <h4>Combat & Stats</h4>
                 <div className="grid-input-group">
                     <label>Attack:</label><input type="number" min="0" value={unit.attack} onChange={(e) => handleNumericChange('attack', e.target.value)} />
@@ -107,7 +112,7 @@ const UnitEditorCard = ({ unit, onUpdate, onRemove, availableResources, availabl
 
                 <h4>Movement & Traversing</h4>
                 <div className="grid-input-group">
-                    <label>Movement Radius:</label><input type="number" min="0" value={unit.movement_radius} onChange={(e) => handleNumericChange('movement_radius', e.target.value)} />
+                    <label>Max Move Actions:</label><input type="number" min="0" value={unit.max_move_actions} onChange={(e) => handleNumericChange('max_move_actions', e.target.value)} />
                 </div>
                  <div className="checkbox-grid-4-cols">
                     <label><input type="checkbox" checked={unit.land_traversing} onChange={(e) => handleCheckboxChange('land_traversing', e.target.checked)} /> Land</label>
@@ -127,7 +132,6 @@ const UnitEditorCard = ({ unit, onUpdate, onRemove, availableResources, availabl
                     <label><input type="checkbox" checked={unit.can_carry_type_underwater} onChange={(e) => handleCheckboxChange('can_carry_type_underwater', e.target.checked)} /> Carries Underwater</label>
                 </div>
                 
-                {/* THE FIX: New section for research requirements */}
                 <h4>Requirements</h4>
                 <div className="checkbox-grid">
                     {availableResearch.length > 0 ? availableResearch.map(res => (
@@ -143,12 +147,13 @@ const UnitEditorCard = ({ unit, onUpdate, onRemove, availableResources, availabl
 };
 
 const UnitsetCreator = ({ onReturnToMenu }) => {
-    const { resourceSet } = useContext(ResourceSetContext);
-    const { researchSet } = useContext(ResearchSetContext); // Get research from context
+    const { resourceSet, loadResourceSetFromZip } = useContext(ResourceSetContext);
+    const { researchSet, loadResearchSetFromZip } = useContext(ResearchSetContext);
 
     const [setName, setSetName] = useState("MyUnits");
     const [units, setUnits] = useState([]);
     const [nextId, setNextId] = useState(0);
+    const importInputRef = useRef(null); // Ref for the file input
 
     const handleAddUnit = () => {
         const newUnit = {
@@ -164,7 +169,7 @@ const UnitsetCreator = ({ onReturnToMenu }) => {
             underwater_traversing: false,
             cost: [],
             build_time: 1,
-            movement_radius: 1,
+            max_move_actions: 1,
             min_attack_distance: 1,
             max_attack_distance: 1,
             attack: 1,
@@ -175,6 +180,7 @@ const UnitsetCreator = ({ onReturnToMenu }) => {
             can_carry_type_air: false,
             can_carry_type_overwater: false,
             can_carry_type_underwater: false,
+            isColonist: false,
         };
         setUnits([...units, newUnit]);
         setNextId(nextId + 1);
@@ -199,7 +205,6 @@ const UnitsetCreator = ({ onReturnToMenu }) => {
         const finalZip = new JSZip();
         const assetsFolder = finalZip.folder("assets").folder("textures");
 
-        // THE FIX: Bundle both research and resource sets as dependencies
         const resourceSetBlob = await createResourceSetArchive(resourceSet);
         finalZip.file("resourceset.szrs", resourceSetBlob);
         
@@ -221,6 +226,55 @@ const UnitsetCreator = ({ onReturnToMenu }) => {
         saveAs(zipBlob, `${setName}.szus`);
     };
 
+    // THE FIX: New import handler function
+    const handleImportSet = async (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        try {
+            const zip = await JSZip.loadAsync(file);
+
+            // Load dependencies from the archive first
+            const resourceSetFile = zip.file("resourceset.szrs");
+            if (resourceSetFile) {
+                await loadResourceSetFromZip(await resourceSetFile.async("blob"));
+            } else {
+                throw new Error("Archive is missing dependency: resourceset.szrs");
+            }
+
+            const researchSetFile = zip.file("researchset.szrsh");
+            if (researchSetFile) {
+                await loadResearchSetFromZip(await researchSetFile.async("blob"));
+            } else {
+                throw new Error("Archive is missing dependency: researchset.szrsh");
+            }
+
+            // Load the main unit manifest
+            const manifestFile = zip.file("manifest.json");
+            if (!manifestFile) throw new Error("manifest.json not found in unit set.");
+            const manifest = JSON.parse(await manifestFile.async("string"));
+
+            setSetName(manifest.name);
+            let currentId = 0;
+            const importedUnits = (manifest.units || []).map(unitData => {
+                currentId++;
+                // Ensure all fields have default values for backwards compatibility
+                return {
+                    id: currentId,
+                    ...unitData,
+                    requiresResearch: unitData.requiresResearch || [],
+                    isColonist: unitData.isColonist || false,
+                };
+            });
+            setUnits(importedUnits);
+            setNextId(currentId);
+
+        } catch (error) {
+            alert(`Failed to import unit set: ${error.message}`);
+        }
+        event.target.value = null;
+    };
+
     return (
         <div className="creator-container">
             <div className="creator-panel">
@@ -230,8 +284,11 @@ const UnitsetCreator = ({ onReturnToMenu }) => {
                 <input type="text" value={setName} placeholder="Unit Set Name" onChange={(e) => setSetName(e.target.value)} />
                 <div className="button-group">
                     <button onClick={handleAddUnit}>Add New Unit</button>
-                    <button disabled>Import & Edit</button>
+                    {/* THE FIX: Button is now active and wired up */}
+                    <button onClick={() => importInputRef.current.click()}>Import & Edit</button>
                 </div>
+                {/* THE FIX: Hidden file input is added */}
+                <input type="file" ref={importInputRef} onChange={handleImportSet} style={{ display: 'none' }} accept=".szus" />
                 <button onClick={handleExport} disabled={units.length === 0}>Export to .szus</button>
                 <button onClick={onReturnToMenu} className="return-button">Return to Main Menu</button>
             </div>

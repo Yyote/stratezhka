@@ -21,12 +21,14 @@ export class Cell extends TemplatableObject {
     /** @type {string} */
     this.texture = template.texture_path;
     /** @type {boolean} */
-    this.land_passable = template.ground_passable;
+    this.land_passable = template.land_passable;
     /** @type {boolean} */
     this.air_passable = template.air_passable;
     /** @type {boolean} */
     this.overwater_passable = template.overwater_passable;
     /** @type {boolean} */
     this.underwater_passable = template.underwater_passable;
+    /** @type {number} */
+    this.consumes_movement = template.consumes_movement ?? 1; // Feature 3
   }
 }

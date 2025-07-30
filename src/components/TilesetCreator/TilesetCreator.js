@@ -8,10 +8,9 @@ const TileEditorCard = ({ tile, onUpdate, onRemove }) => {
     const file = e.target.files[0];
     if (file && file.type === "image/png") {
       const textureUrl = URL.createObjectURL(file);
-      // When a file is selected, we have a File object and a URL
       onUpdate({ ...tile, texture_path: file.name, textureFile: file, textureUrl, textureBlob: null });
     } else {
-        alert("Please select a valid .png file.");
+      alert("Please select a valid .png file.");
     }
   };
 
@@ -27,19 +26,23 @@ const TileEditorCard = ({ tile, onUpdate, onRemove }) => {
             />
             <div className="creator-card-texture">
                 {tile.textureUrl && <img src={tile.textureUrl} alt="preview" />}
-                <button onClick={() => document.getElementById(`tile-file-${tile.id}`).click()}>
-                    Set Texture
-                </button>
+                <button onClick={() => document.getElementById(`tile-file-${tile.id}`).click()}>Set Texture</button>
                 <input type="file" id={`tile-file-${tile.id}`} style={{ display: 'none' }} onChange={handleFileChange} accept="image/png" />
             </div>
             <button className="remove-btn" onClick={onRemove}>×</button>
         </div>
       <div className="creator-card-body">
-        <div className="passability-flags">
-          <label><input type="checkbox" checked={tile.ground_passable} onChange={(e) => onUpdate({ ...tile, ground_passable: e.target.checked })} /> Ground</label>
-          <label><input type="checkbox" checked={tile.air_passable} onChange={(e) => onUpdate({ ...tile, air_passable: e.target.checked })} /> Air</label>
-          <label><input type="checkbox" checked={tile.overwater_passable} onChange={(e) => onUpdate({ ...tile, overwater_passable: e.target.checked })} /> Overwater</label>
-          <label><input type="checkbox" checked={tile.underwater_passable} onChange={(e) => onUpdate({ ...tile, underwater_passable: e.target.checked })} /> Underwater</label>
+        <h4>Properties</h4>
+        <div className="grid-input-group">
+            <label>Movement Cost:</label>
+            <input type="number" min="0" value={tile.consumes_movement} onChange={(e) => onUpdate({ ...tile, consumes_movement: parseFloat(e.target.value) || 0 })} />
+        </div>
+        <h4>Passability</h4>
+        <div className="checkbox-grid-4-cols">
+            <label><input type="checkbox" checked={tile.land_passable} onChange={(e) => onUpdate({ ...tile, land_passable: e.target.checked })} /> Land</label>
+            <label><input type="checkbox" checked={tile.air_passable} onChange={(e) => onUpdate({ ...tile, air_passable: e.target.checked })} /> Air</label>
+            <label><input type="checkbox" checked={tile.overwater_passable} onChange={(e) => onUpdate({ ...tile, overwater_passable: e.target.checked })} /> Overwater</label>
+            <label><input type="checkbox" checked={tile.underwater_passable} onChange={(e) => onUpdate({ ...tile, underwater_passable: e.target.checked })} /> Underwater</label>
         </div>
       </div>
     </div>
@@ -57,13 +60,14 @@ const TilesetCreator = ({ onReturnToMenu }) => {
       id: nextId,
       type_name: `new_tile_${nextId}`,
       texture_path: "",
-      textureFile: null,  // From file input
-      textureBlob: null,  // From zip import
+      textureFile: null,
+      textureBlob: null,
       textureUrl: null,
-      ground_passable: true,
+      land_passable: true,
       air_passable: true,
       overwater_passable: false,
       underwater_passable: false,
+      consumes_movement: 1,
     };
     setTiles([...tiles, newTile]);
     setNextId(nextId + 1);
@@ -83,13 +87,11 @@ const TilesetCreator = ({ onReturnToMenu }) => {
     const assetsFolder = zip.folder("assets").folder("textures");
 
     const manifestTiles = tiles.map(tile => {
-      // THE FIX: Check for both file and blob to handle new and imported textures
       if (tile.textureFile) {
         assetsFolder.file(tile.texture_path, tile.textureFile);
       } else if (tile.textureBlob) {
         assetsFolder.file(tile.texture_path, tile.textureBlob);
       }
-      
       const { id, textureFile, textureUrl, textureBlob, ...manifestTile } = tile;
       return manifestTile;
     });
@@ -103,38 +105,28 @@ const TilesetCreator = ({ onReturnToMenu }) => {
   const handleImportSet = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
-
     try {
         const zip = await JSZip.loadAsync(file);
         const manifestFile = zip.file("manifest.json");
         if (!manifestFile) throw new Error("manifest.json not found.");
-
         const manifest = JSON.parse(await manifestFile.async("string"));
         setTilesetName(manifest.name);
 
         let currentId = 0;
         const importedTiles = await Promise.all(
-            manifest.tiles.map(async (tileData) => {
+            (manifest.tiles || []).map(async (tileData) => {
                 const textureFile = zip.file(`assets/textures/${tileData.texture_path}`);
-                let textureUrl = null;
-                let textureBlob = null;
+                let textureUrl = null, textureBlob = null;
                 if (textureFile) {
                     textureBlob = await textureFile.async("blob");
                     textureUrl = URL.createObjectURL(textureBlob);
                 }
                 currentId++;
-                return {
-                    ...tileData,
-                    id: currentId,
-                    textureUrl,
-                    textureBlob,
-                    textureFile: null,
-                };
+                return { ...tileData, id: currentId, textureUrl, textureBlob, textureFile: null };
             })
         );
         setTiles(importedTiles);
         setNextId(currentId);
-
     } catch (error) {
         alert("Failed to import tileset: " + error.message);
     }
@@ -145,12 +137,7 @@ const TilesetCreator = ({ onReturnToMenu }) => {
     <div className="creator-container">
       <div className="creator-panel">
         <h2>Tileset Creator</h2>
-        <input
-          type="text"
-          value={tilesetName}
-          placeholder="Tileset Name"
-          onChange={(e) => setTilesetName(e.target.value)}
-        />
+        <input type="text" value={tilesetName} placeholder="Tileset Name" onChange={(e) => setTilesetName(e.target.value)} />
         <div className="button-group">
             <button onClick={handleAddTile}>Add New Tile</button>
             <button onClick={() => importInputRef.current.click()}>Import & Edit .szts</button>

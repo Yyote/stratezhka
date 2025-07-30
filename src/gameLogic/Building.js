@@ -17,12 +17,9 @@ export class Building extends TemplatableObject {
     this.remaining_turns_to_build = template.build_time || 1;
 
     // --- Constants from template ---
-    
-    /** @type {string} - The user-friendly display name */
     this.name = template.name || "Unnamed Building";
-
-    this.requiresResearch = template.requiresResearch || [];
     this.texture = template.texture_path;
+    this.requiresResearch = template.requiresResearch || [];
     this.land_positioned = template.land_positioned || false;
     this.air_positioned = template.air_positioned || false;
     this.overwater_positioned = template.overwater_positioned || false;
@@ -37,5 +34,10 @@ export class Building extends TemplatableObject {
     this.gives_defense_bonus = template.gives_defense_bonus || 0;
     this.can_research = template.can_research || [];
     this.canMine = template.canMine || null;
+    
+    // --- NEW PROPERTIES ---
+    this.converts = template.converts || []; // Feature 1
+    this.isRoad = template.isRoad || false; // Feature 2
+    this.consumes_action_override = template.consumes_action_override || 0; // Feature 3
   }
 }

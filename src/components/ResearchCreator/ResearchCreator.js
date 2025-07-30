@@ -4,7 +4,7 @@ import JSZip from 'jszip';
 import { ResourceSetContext } from '../../context/ResourceSetContext';
 import './ResearchCreator.css';
 
-const ResearchEditorCard = ({ research, onUpdate, onRemove, availableResources }) => {
+const ResearchEditorCard = ({ research, onUpdate, onRemove, availableResources, availableResearch }) => {
   const handleCostChange = (index, field, value) => {
     const newCost = [...research.cost];
     newCost[index][field] = field === 'amount' ? parseFloat(value) || 0 : value;
@@ -19,6 +19,14 @@ const ResearchEditorCard = ({ research, onUpdate, onRemove, availableResources }
   const handleRemoveCost = (index) => {
     const newCost = research.cost.filter((_, i) => i !== index);
     onUpdate({ ...research, cost: newCost });
+  };
+
+  // NEW: Handler for changing research requirements
+  const handleRequirementChange = (requiredTypeId, isChecked) => {
+    const newRequirements = isChecked
+      ? [...research.requiresResearch, requiredTypeId]
+      : research.requiresResearch.filter(id => id !== requiredTypeId);
+    onUpdate({ ...research, requiresResearch: newRequirements });
   };
 
   return (
@@ -44,6 +52,20 @@ const ResearchEditorCard = ({ research, onUpdate, onRemove, availableResources }
           ))}
           <button onClick={handleAddCost} className="add-cost-btn">+ Add Cost</button>
         </div>
+        {/* NEW: Requirements section */}
+        <h4>Requirements (from this set):</h4>
+        <div className="checkbox-grid">
+            {availableResearch.length > 0 ? availableResearch.map(req => (
+                <label key={req.TypeId}>
+                    <input
+                        type="checkbox"
+                        checked={research.requiresResearch.includes(req.TypeId)}
+                        onChange={(e) => handleRequirementChange(req.TypeId, e.target.checked)}
+                    />
+                    {req.name}
+                </label>
+            )) : <p>No other research items in this set to require.</p>}
+        </div>
       </div>
     </div>
   );
@@ -57,7 +79,14 @@ const ResearchCreator = ({ onReturnToMenu }) => {
   const importInputRef = useRef(null);
 
   const handleAddResearch = () => {
-    const newResearch = { id: nextId, TypeId: `new_tech_${nextId}`, name: `New Tech ${nextId}`, description: "", cost: [] };
+    const newResearch = {
+        id: nextId,
+        TypeId: `new_tech_${nextId}`,
+        name: `New Tech ${nextId}`,
+        description: "",
+        cost: [],
+        requiresResearch: [] // New default property
+    };
     setResearches([...researches, newResearch]);
     setNextId(nextId + 1);
   };
@@ -66,7 +95,6 @@ const ResearchCreator = ({ onReturnToMenu }) => {
   const handleRemove = (id) => { setResearches(researches.filter(r => r.id !== id)); };
 
   const handleExport = async () => {
-    // THE FIX: Check for dependency and then bundle it into the archive.
     if (!resourceSet || resourceSet.name === 'None') {
       alert("A Resource Set must be loaded before exporting a Research Set.");
       return;
@@ -78,16 +106,12 @@ const ResearchCreator = ({ onReturnToMenu }) => {
 
     const researchZip = new JSZip();
 
-    // Step 1: Create the dependency archive (resourceset.szrs) in memory.
     const resourceZip = new JSZip();
     const resourceManifest = { name: resourceSet.name, resources: resourceSet.resources };
     resourceZip.file("manifest.json", JSON.stringify(resourceManifest, null, 2));
     const resourceSetBlob = await resourceZip.generateAsync({ type: "blob" });
-
-    // Step 2: Add the dependency blob to the main zip.
     researchZip.file("resourceset.szrs", resourceSetBlob);
 
-    // Step 3: Add the research manifest to the main zip.
     const manifestResearches = researches.map(res => {
         const { id, ...manifestData } = res;
         return manifestData;
@@ -95,7 +119,6 @@ const ResearchCreator = ({ onReturnToMenu }) => {
     const researchManifest = { name: setName, researches: manifestResearches };
     researchZip.file("manifest.json", JSON.stringify(researchManifest, null, 2));
 
-    // Step 4: Generate and save the final .szrsh file.
     const zipBlob = await researchZip.generateAsync({ type: "blob" });
     saveAs(zipBlob, `${setName}.szrsh`);
   };
@@ -112,7 +135,8 @@ const ResearchCreator = ({ onReturnToMenu }) => {
         let currentId = 0;
         const importedResearches = (manifest.researches || []).map(resData => {
             currentId++;
-            return { ...resData, id: currentId };
+            // Ensure imported data has the new field
+            return { ...resData, id: currentId, requiresResearch: resData.requiresResearch || [] };
         });
         setResearches(importedResearches);
         setNextId(currentId);
@@ -145,6 +169,8 @@ const ResearchCreator = ({ onReturnToMenu }) => {
             onUpdate={handleUpdate}
             onRemove={() => handleRemove(res.id)}
             availableResources={resourceSet?.resources || []}
+            // A research item cannot require itself, so we filter it out
+            availableResearch={researches.filter(r => r.id !== res.id)}
           />
         ))}
       </div>

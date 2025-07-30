@@ -1,3 +1,22 @@
 /* Re-use the generic styles for consistency */
 @import url('../ResourceCreator/ResourceCreator.css');
 @import url('../UnitsetCreator/UnitsetCreator.css'); /* Reuse grid styles etc. */
+
+.conversion-entry {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #f9f9f9;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #eee;
+}
+.conversion-entry span {
+    font-weight: 500;
+}
+.conversion-entry input {
+    width: 60px;
+}
+.conversion-entry select {
+    flex-grow: 1;
+}
