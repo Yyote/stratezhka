@@ -1,23 +1,23 @@
 import React, { useRef, useContext } from 'react';
 import { TilesetContext } from '../../context/TilesetContext';
 import { ResourceSetContext } from '../../context/ResourceSetContext';
-import { ResearchSetContext } from '../../context/ResearchSetContext'; // Import new
+import { ResearchSetContext } from '../../context/ResearchSetContext';
 import { UnitsetContext } from '../../context/UnitsetContext';
 import { BuildingsetContext } from '../../context/BuildingsetContext';
 import JSZip from 'jszip';
 import './MainMenu.css';
 
-const MainMenu = ({ onStartHotseat, onStartGameWithMap, setMode, isAwaitingMap }) => {
+const MainMenu = ({ onStartHotseat, onStartGameWithMap, setMode, isAwaitingMap, onResourceSetLoaded }) => {
   const mapInputRef = useRef(null);
   const tilesetInputRef = useRef(null);
   const resourceSetInputRef = useRef(null);
-  const researchSetInputRef = useRef(null); // New ref
+  const researchSetInputRef = useRef(null);
   const unitSetInputRef = useRef(null);
   const buildingSetInputRef = useRef(null);
 
   const { tileset, loadTilesetFromZip } = useContext(TilesetContext);
   const { resourceSet, loadResourceSetFromZip } = useContext(ResourceSetContext);
-  const { researchSet, loadResearchSetFromZip } = useContext(ResearchSetContext); // New context hook
+  const { researchSet, loadResearchSetFromZip } = useContext(ResearchSetContext);
   const { unitSet, loadUnitsetFromZip } = useContext(UnitsetContext);
   const { buildingSet, loadBuildingsetFromZip } = useContext(BuildingsetContext);
 
@@ -47,9 +47,14 @@ const MainMenu = ({ onStartHotseat, onStartGameWithMap, setMode, isAwaitingMap }
     event.target.value = null;
   };
 
-  const handleResourceSetFileChange = (event) => {
+  const handleResourceSetFileChange = async (event) => {
     const file = event.target.files[0];
-    if (file) loadResourceSetFromZip(file);
+    if (file) {
+        const loadedSet = await loadResourceSetFromZip(file);
+        if (loadedSet) {
+            onResourceSetLoaded(loadedSet); // Pass the complete data up to App.js
+        }
+    }
     event.target.value = null;
   };
 
@@ -65,7 +70,6 @@ const MainMenu = ({ onStartHotseat, onStartGameWithMap, setMode, isAwaitingMap }
     event.target.value = null;
   };
 
-  // New handler function for research set files
   const handleResearchSetFileChange = (event) => {
     const file = event.target.files[0];
     if (file) loadResearchSetFromZip(file);

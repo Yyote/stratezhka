@@ -54,7 +54,6 @@ const BuildingEditorCard = ({ building, onUpdate, onRemove, availableResources, 
         onUpdate({ ...building, converts: building.converts.filter((_, i) => i !== index) });
     };
     
-    // THE FIX: Add handlers for managing the building's cost
     const handleCostChange = (index, field, value) => {
         const newCost = [...building.cost];
         newCost[index][field] = field === 'amount' ? parseFloat(value) || 0 : value;
@@ -113,8 +112,12 @@ const BuildingEditorCard = ({ building, onUpdate, onRemove, availableResources, 
                     <label>Move Cost Override:</label><input type="number" min="0" value={building.consumes_action_override} onChange={(e) => handleNumericChange('consumes_action_override', e.target.value)} />
                 </div>
                 
-                {/* THE FIX: Add the cost section */}
                 <h4>Build Cost</h4>
+                {/* THE FIX: Add the new input field */}
+                <div className="grid-input-group">
+                    <label>Build Time (turns):</label><input type="number" min="1" value={building.build_time} onChange={(e) => handleNumericChange('build_time', e.target.value)} />
+                    <label>Cost Modifier:</label><input type="number" min="1" step="0.01" value={building.alreadyBuiltCostModifier} onChange={(e) => handleNumericChange('alreadyBuiltCostModifier', e.target.value)} />
+                </div>
                 <div className="cost-list">
                     {building.cost.map((cost, index) => (
                         <div key={index} className="cost-entry">
@@ -153,7 +156,6 @@ const BuildingEditorCard = ({ building, onUpdate, onRemove, availableResources, 
                 
                  <h4>Production</h4>
                 <div className="grid-input-group">
-                    <label>Build Time (turns):</label><input type="number" min="1" value={building.build_time} onChange={(e) => handleNumericChange('build_time', e.target.value)} />
                     <label>Mines Resource:</label>
                     <select value={building.canMine || ''} onChange={(e) => handleFieldChange('canMine', e.target.value || null)}>
                         <option value="">None</option>
@@ -198,6 +200,7 @@ const BuildingsetCreator = ({ onReturnToMenu }) => {
             underwater_positioned: false, canBuild: [], cost: [], build_time: 1, attack: 0, defense: 5,
             max_hp: 50, gives_attack_bonus: 0, gives_defense_bonus: 0, can_research: [], canMine: null,
             converts: [], isRoad: false, consumes_action_override: 0,
+            alreadyBuiltCostModifier: 1, // THE FIX: Add the new property to the default object
         };
         setBuildings([...buildings, newBuilding]);
         setNextId(nextId + 1);

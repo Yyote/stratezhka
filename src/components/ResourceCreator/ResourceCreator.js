@@ -77,16 +77,9 @@ const ResourceCreator = ({ onReturnToMenu }) => {
 
   const handleAddResource = () => {
     const newResource = {
-      id: nextId,
-      TypeId: `new_resource_${nextId}`,
-      name: `New Resource ${nextId}`,
-      texture_path: "",
-      textureFile: null,
-      textureBlob: null,
-      textureUrl: null,
-      canBeOn: [],
-      possibility: {},
-      description: "",
+      id: nextId, TypeId: `new_resource_${nextId}`, name: `New Resource ${nextId}`,
+      texture_path: "", textureFile: null, textureBlob: null, textureUrl: null,
+      canBeOn: [], possibility: {}, description: "",
     };
     setResources([...resources, newResource]);
     setNextId(nextId + 1);
@@ -106,11 +99,11 @@ const ResourceCreator = ({ onReturnToMenu }) => {
     const assetsFolder = zip.folder("assets").folder("textures");
 
     const manifestResources = resources.map(res => {
-      // THE FIX: Check for both file and blob to handle new and imported textures
-      if (res.textureFile) {
-        assetsFolder.file(res.texture_path, res.textureFile);
-      } else if (res.textureBlob) {
-        assetsFolder.file(res.texture_path, res.textureBlob);
+      // THE FIX: Check for both `textureFile` (newly added) and `textureBlob` (imported).
+      // This guarantees that textures are saved back into the archive correctly.
+      if (res.texture_path && (res.textureFile || res.textureBlob)) {
+        const textureData = res.textureFile || res.textureBlob;
+        assetsFolder.file(res.texture_path, textureData);
       }
       const { id, textureFile, textureUrl, textureBlob, ...manifestData } = res;
       return manifestData;
@@ -149,7 +142,7 @@ const ResourceCreator = ({ onReturnToMenu }) => {
                     ...resData,
                     id: currentId,
                     textureUrl,
-                    textureBlob,
+                    textureBlob, // This is crucial for re-exporting
                     textureFile: null,
                 };
             })

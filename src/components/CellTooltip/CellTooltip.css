@@ -1,0 +1,64 @@
+.cell-tooltip {
+    position: fixed; /* Use fixed to position relative to the viewport */
+    background-color: rgba(40, 44, 52, 0.95);
+    color: white;
+    border: 1px solid #61dafb;
+    border-radius: 8px;
+    padding: 10px 15px;
+    z-index: 2000; /* Ensure it's on top of everything */
+    pointer-events: none; /* The tooltip itself shouldn't be interactive */
+    font-size: 0.9rem;
+    backdrop-filter: blur(5px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    width: 200px; /* Give it a consistent width */
+    text-align: left;
+    transition: opacity 0.1s ease-in-out;
+}
+
+.tooltip-header {
+    text-align: center;
+    font-size: 1rem;
+    font-weight: bold;
+    color: #61dafb;
+    margin-bottom: 8px;
+    border-bottom: 1px solid #4a5160;
+    padding-bottom: 5px;
+}
+
+.tooltip-section {
+    margin-top: 10px;
+}
+
+.tooltip-section h5 {
+    margin: 0 0 5px 0;
+    font-size: 0.8rem;
+    color: #aaa;
+    text-transform: uppercase;
+}
+
+.tooltip-item-list {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.tooltip-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tooltip-item img {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.tooltip-item-name {
+    flex-grow: 1;
+}
+
+.tooltip-item-count {
+    font-weight: bold;
+}

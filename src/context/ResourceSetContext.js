@@ -10,14 +10,11 @@ const DEFAULT_RESOURCESET = {
 
 export const ResourceSetProvider = ({ children }) => {
   const [resourceSet, setResourceSet] = useState(DEFAULT_RESOURCESET);
-  const [isLoading, setIsLoading] = useState(false);
 
   const loadResourceSetFromZip = useCallback(async (zipFile) => {
-    setIsLoading(true);
     try {
       const zip = await JSZip.loadAsync(zipFile);
       const manifestFile = zip.file("manifest.json");
-
       if (!manifestFile) {
         throw new Error("manifest.json not found in the resource set file.");
       }
@@ -25,17 +22,33 @@ export const ResourceSetProvider = ({ children }) => {
       const manifestContent = await manifestFile.async("string");
       const manifest = JSON.parse(manifestContent);
 
-      setResourceSet({ name: manifest.name, resources: manifest.resources || [] });
+      const resourcesWithData = await Promise.all(
+        (manifest.resources || []).map(async (resData) => {
+          let textureUrl = null;
+          let textureBlob = null;
+          if (resData.texture_path) {
+              const fullPath = `assets/textures/${resData.texture_path}`;
+              const textureFile = zip.file(fullPath);
+              if (textureFile) {
+                  textureBlob = await textureFile.async("blob");
+                  textureUrl = URL.createObjectURL(textureBlob);
+              }
+          }
+          return { ...resData, textureUrl, textureBlob };
+        })
+      );
+      
+      const newResourceSet = { name: manifest.name, resources: resourcesWithData };
+      setResourceSet(newResourceSet); // Update the context for other consumers
+      return newResourceSet; // Return the fully processed object
 
     } catch (error) {
       alert(`Failed to load resource set: ${error.message}`);
-      console.error(error);
-    } finally {
-      setIsLoading(false);
+      return null; // Return null on failure
     }
   }, []);
 
-  const value = { resourceSet, isLoading, loadResourceSetFromZip, setResourceSet };
+  const value = { resourceSet, loadResourceSetFromZip, setResourceSet };
 
   return (
     <ResourceSetContext.Provider value={value}>{children}</ResourceSetContext.Provider>

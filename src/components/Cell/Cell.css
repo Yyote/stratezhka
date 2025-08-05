@@ -29,9 +29,6 @@
   z-index: 5;
 }
 
-/* ====================================================== */
-/* NEW: Styles for Cities and Flags                       */
-/* ====================================================== */
 .city-marker {
   position: absolute;
   width: 60%;
@@ -66,10 +63,30 @@
 .player-flag::before { /* The flagpole */
   content: '';
   position: absolute;
-  left: -8px; /* Adjusted for centering */
+  left: -8px;
   bottom: -4px;
   width: 2px;
   height: 12px;
   background-color: rgba(255, 255, 255, 0.9);
   box-shadow: 0 0 2px black;
+}
+
+/* NEW: Styles for resource icons on the map */
+.resource-container {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    width: 24px;
+    pointer-events: none; /* Let clicks pass through to the cell */
+}
+
+.resource-icon {
+    width: 12px;
+    height: 12px;
+    object-fit: contain;
+    background-color: rgba(0,0,0,0.3);
+    border-radius: 3px;
 }

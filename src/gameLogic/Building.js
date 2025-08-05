@@ -34,10 +34,11 @@ export class Building extends TemplatableObject {
     this.gives_defense_bonus = template.gives_defense_bonus || 0;
     this.can_research = template.can_research || [];
     this.canMine = template.canMine || null;
+    this.converts = template.converts || [];
+    this.isRoad = template.isRoad || false;
+    this.consumes_action_override = template.consumes_action_override || 0;
     
-    // --- NEW PROPERTIES ---
-    this.converts = template.converts || []; // Feature 1
-    this.isRoad = template.isRoad || false; // Feature 2
-    this.consumes_action_override = template.consumes_action_override || 0; // Feature 3
+    // --- NEW PROPERTY ---
+    this.alreadyBuiltCostModifier = template.alreadyBuiltCostModifier ?? 1;
   }
 }
