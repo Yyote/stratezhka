@@ -24,6 +24,7 @@ export class Building extends TemplatableObject {
     this.air_positioned = template.air_positioned || false;
     this.overwater_positioned = template.overwater_positioned || false;
     this.underwater_positioned = template.underwater_positioned || false;
+    this.shallow_water_positioned = template.shallow_water_positioned || false;
     this.canBuild = template.canBuild || [];
     this.cost = template.cost || [];
     this.build_time = template.build_time || 1;
@@ -37,8 +38,6 @@ export class Building extends TemplatableObject {
     this.converts = template.converts || [];
     this.isRoad = template.isRoad || false;
     this.consumes_action_override = template.consumes_action_override || 0;
-    
-    // --- NEW PROPERTY ---
     this.alreadyBuiltCostModifier = template.alreadyBuiltCostModifier ?? 1;
   }
 }

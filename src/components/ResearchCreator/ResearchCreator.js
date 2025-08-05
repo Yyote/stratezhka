@@ -21,7 +21,6 @@ const ResearchEditorCard = ({ research, onUpdate, onRemove, availableResources, 
     onUpdate({ ...research, cost: newCost });
   };
 
-  // NEW: Handler for changing research requirements
   const handleRequirementChange = (requiredTypeId, isChecked) => {
     const newRequirements = isChecked
       ? [...research.requiresResearch, requiredTypeId]
@@ -52,7 +51,6 @@ const ResearchEditorCard = ({ research, onUpdate, onRemove, availableResources, 
           ))}
           <button onClick={handleAddCost} className="add-cost-btn">+ Add Cost</button>
         </div>
-        {/* NEW: Requirements section */}
         <h4>Requirements (from this set):</h4>
         <div className="checkbox-grid">
             {availableResearch.length > 0 ? availableResearch.map(req => (
@@ -85,7 +83,7 @@ const ResearchCreator = ({ onReturnToMenu }) => {
         name: `New Tech ${nextId}`,
         description: "",
         cost: [],
-        requiresResearch: [] // New default property
+        requiresResearch: []
     };
     setResearches([...researches, newResearch]);
     setNextId(nextId + 1);
@@ -106,12 +104,23 @@ const ResearchCreator = ({ onReturnToMenu }) => {
 
     const researchZip = new JSZip();
 
+    // Create a complete and valid resourceset.szrs dependency file
     const resourceZip = new JSZip();
-    const resourceManifest = { name: resourceSet.name, resources: resourceSet.resources };
+    const resAssets = resourceZip.folder("assets").folder("textures");
+    const resManifestResources = resourceSet.resources.map(res => {
+        if(res.texture_path && (res.textureFile || res.textureBlob)) {
+            const textureData = res.textureFile || res.textureBlob;
+            resAssets.file(res.texture_path, textureData);
+        }
+        const { id, textureFile, textureUrl, textureBlob, ...manifestData } = res;
+        return manifestData;
+    });
+    const resourceManifest = { name: resourceSet.name, resources: resManifestResources };
     resourceZip.file("manifest.json", JSON.stringify(resourceManifest, null, 2));
     const resourceSetBlob = await resourceZip.generateAsync({ type: "blob" });
     researchZip.file("resourceset.szrs", resourceSetBlob);
 
+    // Add the research manifest to the main zip
     const manifestResearches = researches.map(res => {
         const { id, ...manifestData } = res;
         return manifestData;
@@ -135,7 +144,6 @@ const ResearchCreator = ({ onReturnToMenu }) => {
         let currentId = 0;
         const importedResearches = (manifest.researches || []).map(resData => {
             currentId++;
-            // Ensure imported data has the new field
             return { ...resData, id: currentId, requiresResearch: resData.requiresResearch || [] };
         });
         setResearches(importedResearches);
@@ -169,7 +177,6 @@ const ResearchCreator = ({ onReturnToMenu }) => {
             onUpdate={handleUpdate}
             onRemove={() => handleRemove(res.id)}
             availableResources={resourceSet?.resources || []}
-            // A research item cannot require itself, so we filter it out
             availableResearch={researches.filter(r => r.id !== res.id)}
           />
         ))}

@@ -7,18 +7,18 @@ import { saveAs } from 'file-saver';
 import JSZip from 'jszip';
 import './MapEditor.css';
 
-const MapEditor = ({ onReturnToMenu, resourceSet }) => {
+const MapEditor = ({ onReturnToMenu }) => {
   const { tileset, loadTilesetFromZip } = useContext(TilesetContext);
-  const { resourceSet: contextResourceSet } = useContext(ResourceSetContext);
+  const { resourceSet } = useContext(ResourceSetContext);
   const mapDisplayRef = useRef(null);
   const importInputRef = useRef(null);
 
   const [mapData, setMapData] = useState(null);
   const [selectedTile, setSelectedTile] = useState('');
   const [selectedResource, setSelectedResource] = useState('');
-
-  // Prioritize the prop, but fall back to the context for general use
-  const activeResourceSet = resourceSet || contextResourceSet;
+  
+  // THE FIX: Restore the gridSize state
+  const [gridSize, setGridSize] = useState({ width: 20, height: 15 });
 
   useEffect(() => {
     if (tileset?.tiles.length > 0 && !selectedTile) {
@@ -32,8 +32,16 @@ const MapEditor = ({ onReturnToMenu, resourceSet }) => {
       alert("Cannot create a map: The current tileset has no tiles.");
       return;
     }
-    const width = 20;
-    const height = 15;
+    
+    // THE FIX: Use the gridSize from the state
+    const width = parseInt(gridSize.width);
+    const height = parseInt(gridSize.height);
+
+    if (isNaN(width) || isNaN(height) || width < 5 || height < 5) {
+        alert("Width and height must be at least 5.");
+        return;
+    }
+
     const newGrid = Array.from({ length: height }, () =>
       Array.from({ length: width }, () => ({ tile: defaultTile, resources: [] }))
     );
@@ -46,7 +54,7 @@ const MapEditor = ({ onReturnToMenu, resourceSet }) => {
   };
 
   const handleTilePaint = (rowIndex, colIndex) => {
-    if (!mapData || !selectedTile) return;
+    if (!mapData) return;
     const newGrid = mapData.grid.map(row => row.map(cell => ({ ...cell, resources: [...cell.resources] })));
     newGrid[rowIndex][colIndex].tile = selectedTile;
     setMapData(prev => ({ ...prev, grid: newGrid }));
@@ -109,7 +117,11 @@ const MapEditor = ({ onReturnToMenu, resourceSet }) => {
         const mapFile = zip.file("map.json");
         if (!mapFile) throw new Error("map.json not found in map file.");
         const loadedMapData = JSON.parse(await mapFile.async("string"));
+        
+        // When importing, also update the gridSize state to match
+        setGridSize({ width: loadedMapData.width, height: loadedMapData.height });
         setMapData(loadedMapData);
+
     } catch (error) {
         alert("Failed to import map: " + error.message);
     }
@@ -128,7 +140,23 @@ const MapEditor = ({ onReturnToMenu, resourceSet }) => {
         </div>
         <input type="file" ref={importInputRef} onChange={handleImportMap} style={{ display: 'none' }} accept=".szmap" />
         <hr/>
-        {mapData && ( <div className="control-group"> <label>Map Name:</label> <input type="text" value={mapData.name} onChange={(e) => setMapData(md => ({...md, name: e.target.value}))} /> </div> )}
+        {mapData && (
+            <div className="control-group"> 
+                <label>Map Name:</label> 
+                <input type="text" value={mapData.name} onChange={(e) => setMapData(md => ({...md, name: e.target.value}))} /> 
+            </div>
+        )}
+        
+        {/* THE FIX: Restore the Width and Height input fields */}
+        <div className="control-group">
+            <label>Width:</label>
+            <input type="number" min="5" max="100" value={gridSize.width} onChange={(e) => setGridSize(s => ({...s, width: e.target.value}))} />
+        </div>
+        <div className="control-group">
+            <label>Height:</label>
+            <input type="number" min="5" max="100" value={gridSize.height} onChange={(e) => setGridSize(s => ({...s, height: e.target.value}))} />
+        </div>
+        
         <button onClick={handleCenterView}>Center View</button>
         <hr />
         <h4>Tile Palette (Left-Click)</h4>
@@ -140,15 +168,17 @@ const MapEditor = ({ onReturnToMenu, resourceSet }) => {
             </div>
           ))}
         </div>
+
         <h4>Resource Palette (Right-Click)</h4>
         <div className="palette">
-            {activeResourceSet?.resources.map((res) => (
+            {resourceSet?.resources.map((res) => (
                 <div key={res.TypeId} className={`palette-tile ${selectedResource === res.TypeId ? 'selected' : ''}`} onClick={() => setSelectedResource(res.TypeId)}>
                     <img src={res.textureUrl} alt={res.TypeId} />
                     <span>{res.name}</span>
                 </div>
             ))}
         </div>
+        
         <hr />
         <button onClick={handleExportMap} disabled={!mapData}>Export Map (.szmap)</button>
         <button className="return-button" onClick={onReturnToMenu}>Return to Main Menu</button>

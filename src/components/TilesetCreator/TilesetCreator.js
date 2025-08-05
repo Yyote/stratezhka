@@ -38,11 +38,12 @@ const TileEditorCard = ({ tile, onUpdate, onRemove }) => {
             <input type="number" min="0" value={tile.consumes_movement} onChange={(e) => onUpdate({ ...tile, consumes_movement: parseFloat(e.target.value) || 0 })} />
         </div>
         <h4>Passability</h4>
-        <div className="checkbox-grid-4-cols">
+        <div className="checkbox-grid">
             <label><input type="checkbox" checked={tile.land_passable} onChange={(e) => onUpdate({ ...tile, land_passable: e.target.checked })} /> Land</label>
             <label><input type="checkbox" checked={tile.air_passable} onChange={(e) => onUpdate({ ...tile, air_passable: e.target.checked })} /> Air</label>
             <label><input type="checkbox" checked={tile.overwater_passable} onChange={(e) => onUpdate({ ...tile, overwater_passable: e.target.checked })} /> Overwater</label>
             <label><input type="checkbox" checked={tile.underwater_passable} onChange={(e) => onUpdate({ ...tile, underwater_passable: e.target.checked })} /> Underwater</label>
+            <label><input type="checkbox" checked={tile.shallow_water_passable} onChange={(e) => onUpdate({ ...tile, shallow_water_passable: e.target.checked })} /> Shallow Water</label>
         </div>
       </div>
     </div>
@@ -67,6 +68,7 @@ const TilesetCreator = ({ onReturnToMenu }) => {
       air_passable: true,
       overwater_passable: false,
       underwater_passable: false,
+      shallow_water_passable: false,
       consumes_movement: 1,
     };
     setTiles([...tiles, newTile]);

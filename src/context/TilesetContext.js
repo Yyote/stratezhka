@@ -3,7 +3,7 @@ import JSZip from 'jszip';
 import defaultGrassPath from '../assets/textures/grass.png';
 import defaultWaterPath from '../assets/textures/water.png';
 import defaultMountainPath from '../assets/textures/mountain.png';
-// DO NOT import component-specific CSS here
+import defaultShallowWaterPath from '../assets/textures/shallow_water.png';
 
 export const TilesetContext = createContext();
 
@@ -14,9 +14,10 @@ export const TilesetProvider = ({ children }) => {
   const initializeDefaultTileset = useCallback(async () => {
     try {
       const defaultTiles = [
-        { name: "grass", path: defaultGrassPath, props: { land_passable: true, air_passable: true, overwater_passable: false, underwater_passable: false } },
-        { name: "water", path: defaultWaterPath, props: { land_passable: false, air_passable: true, overwater_passable: true, underwater_passable: true } },
-        { name: "mountain", path: defaultMountainPath, props: { land_passable: false, air_passable: true, overwater_passable: false, underwater_passable: false } }
+        { name: "grass", path: defaultGrassPath, props: { land_passable: true, air_passable: true, overwater_passable: false, underwater_passable: false, shallow_water_passable: false, consumes_movement: 1 } },
+        { name: "water", path: defaultWaterPath, props: { land_passable: false, air_passable: true, overwater_passable: true, underwater_passable: true, shallow_water_passable: false, consumes_movement: 1 } },
+        { name: "mountain", path: defaultMountainPath, props: { land_passable: false, air_passable: true, overwater_passable: false, underwater_passable: false, shallow_water_passable: false, consumes_movement: 2 } },
+        { name: "shallow_water", path: defaultShallowWaterPath, props: { land_passable: false, air_passable: true, overwater_passable: true, underwater_passable: false, shallow_water_passable: true, consumes_movement: 1.5 } }
       ];
       const processedTiles = await Promise.all(
         defaultTiles.map(async (tileInfo) => {

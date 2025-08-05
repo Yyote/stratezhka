@@ -6,27 +6,21 @@
   padding: 15px 30px;
   background-color: rgba(40, 44, 52, 0.95);
   display: flex;
-  align-items: center; /* Vertically align items */
+  align-items: center;
   z-index: 1000;
   box-sizing: border-box;
-  /* ======================================================== */
-  /* THE FIX: Remove space-between, add gap for general spacing */
-  /* ======================================================== */
-  gap: 30px;
+  gap: 20px; /* Adjusted gap */
 }
 
 .player-info h3 {
     margin: 0;
     font-size: 1.5rem;
-    white-space: nowrap; /* Prevent player name from wrapping */
+    white-space: nowrap;
 }
 
 .player-actions {
   display: flex;
   gap: 15px;
-  /* ======================================================== */
-  /* THE FIX: This pushes the actions group to the far right */
-  /* ======================================================== */
   margin-left: auto; 
 }
 
@@ -36,11 +30,71 @@
     cursor: pointer;
     border-radius: 5px;
     border: 1px solid #ccc;
-    white-space: nowrap; /* Prevent button text from wrapping */
+    white-space: nowrap;
 }
 
 .finish-turn-btn {
   background-color: #4CAF50;
   color: white;
   border-color: #388E3C;
+}
+
+.player-resources {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background-color: rgba(0,0,0,0.2);
+    padding: 5px 15px;
+    border-radius: 8px;
+    border: 1px solid #4a5160;
+}
+
+.resource-display {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.resource-display img {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+}
+
+.resource-display span {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: white;
+}
+
+/* NEW: Styles for the build menu */
+.build-menu {
+    display: flex;
+    gap: 8px;
+    background-color: rgba(0,0,0,0.2);
+    padding: 5px;
+    border-radius: 8px;
+    border: 1px solid #4a5160;
+}
+
+.build-menu button {
+    background-color: #4a5160;
+    color: white;
+    border: 1px solid #61dafb;
+    border-radius: 5px;
+    padding: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.build-menu button:hover:not(:disabled) {
+    background-color: #61dafb;
+    color: #282c34;
+}
+
+.build-menu button:disabled {
+    background-color: #333;
+    border-color: #555;
+    color: #777;
+    cursor: not-allowed;
 }

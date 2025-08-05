@@ -6,23 +6,41 @@ import { ResearchSetContext } from '../../context/ResearchSetContext';
 import { UnitsetContext } from '../../context/UnitsetContext';
 import './BuildingsetCreator.css';
 
-// Helper to create archives for dependencies in memory
 const createResourceSetArchive = async (resourceSet) => {
     const zip = new JSZip();
-    zip.file("manifest.json", JSON.stringify({ name: resourceSet.name, resources: resourceSet.resources }, null, 2));
+    const assets = zip.folder("assets").folder("textures");
+    const manifestResources = resourceSet.resources.map(res => {
+        if(res.texture_path && (res.textureFile || res.textureBlob)) {
+            assets.file(res.texture_path, res.textureFile || res.textureBlob);
+        }
+        const { id, textureFile, textureUrl, textureBlob, ...manifestData } = res;
+        return manifestData;
+    });
+    const manifest = { name: resourceSet.name, resources: manifestResources };
+    zip.file("manifest.json", JSON.stringify(manifest, null, 2));
     return await zip.generateAsync({ type: "blob" });
 };
 const createResearchSetArchive = async (researchSet, resourceSet) => {
     const zip = new JSZip();
     zip.file("resourceset.szrs", await createResourceSetArchive(resourceSet));
-    zip.file("manifest.json", JSON.stringify({ name: researchSet.name, researches: researchSet.researches }, null, 2));
+    const manifest = { name: researchSet.name, researches: researchSet.researches };
+    zip.file("manifest.json", JSON.stringify(manifest, null, 2));
     return await zip.generateAsync({ type: "blob" });
 };
 const createUnitsetArchive = async (unitSet, researchSet, resourceSet) => {
     const zip = new JSZip();
+    const assets = zip.folder("assets").folder("textures");
     zip.file("resourceset.szrs", await createResourceSetArchive(resourceSet));
     zip.file("researchset.szrsh", await createResearchSetArchive(researchSet, resourceSet));
-    zip.file("manifest.json", JSON.stringify({ name: unitSet.name, units: unitSet.units }, null, 2));
+    const manifestUnits = unitSet.units.map(u => {
+        if(u.texture_path && (u.textureFile || u.textureBlob)) {
+            assets.file(u.texture_path, u.textureFile || u.textureBlob);
+        }
+        const { id, textureFile, textureUrl, textureBlob, ...manifestData } = u;
+        return manifestData;
+    });
+    const manifest = { name: unitSet.name, units: manifestUnits };
+    zip.file("manifest.json", JSON.stringify(manifest, null, 2));
     return await zip.generateAsync({ type: "blob" });
 };
 
@@ -95,11 +113,12 @@ const BuildingEditorCard = ({ building, onUpdate, onRemove, availableResources, 
                 </div>
                 
                 <h4>Positioning</h4>
-                <div className="checkbox-grid-4-cols">
+                <div className="checkbox-grid">
                     <label><input type="checkbox" checked={building.land_positioned} onChange={(e) => handleCheckboxChange('land_positioned', e.target.checked)} /> Land</label>
                     <label><input type="checkbox" checked={building.air_positioned} onChange={(e) => handleCheckboxChange('air_positioned', e.target.checked)} /> Air</label>
                     <label><input type="checkbox" checked={building.overwater_positioned} onChange={(e) => handleCheckboxChange('overwater_positioned', e.target.checked)} /> Overwater</label>
                     <label><input type="checkbox" checked={building.underwater_positioned} onChange={(e) => handleCheckboxChange('underwater_positioned', e.target.checked)} /> Underwater</label>
+                    <label><input type="checkbox" checked={building.shallow_water_positioned} onChange={(e) => handleCheckboxChange('shallow_water_positioned', e.target.checked)} /> Shallow Water</label>
                 </div>
 
                 <h4>Combat, Bonuses & Movement</h4>
@@ -113,7 +132,6 @@ const BuildingEditorCard = ({ building, onUpdate, onRemove, availableResources, 
                 </div>
                 
                 <h4>Build Cost</h4>
-                {/* THE FIX: Add the new input field */}
                 <div className="grid-input-group">
                     <label>Build Time (turns):</label><input type="number" min="1" value={building.build_time} onChange={(e) => handleNumericChange('build_time', e.target.value)} />
                     <label>Cost Modifier:</label><input type="number" min="1" step="0.01" value={building.alreadyBuiltCostModifier} onChange={(e) => handleNumericChange('alreadyBuiltCostModifier', e.target.value)} />
@@ -197,10 +215,11 @@ const BuildingsetCreator = ({ onReturnToMenu }) => {
             id: nextId, TypeId: `new_bld_${nextId}`, name: `New Building ${nextId}`, requiresResearch: [],
             texture_path: "", textureFile: null, textureUrl: null, textureBlob: null,
             land_positioned: true, air_positioned: false, overwater_positioned: false,
-            underwater_positioned: false, canBuild: [], cost: [], build_time: 1, attack: 0, defense: 5,
+            underwater_positioned: false, shallow_water_positioned: false,
+            canBuild: [], cost: [], build_time: 1, attack: 0, defense: 5,
             max_hp: 50, gives_attack_bonus: 0, gives_defense_bonus: 0, can_research: [], canMine: null,
             converts: [], isRoad: false, consumes_action_override: 0,
-            alreadyBuiltCostModifier: 1, // THE FIX: Add the new property to the default object
+            alreadyBuiltCostModifier: 1,
         };
         setBuildings([...buildings, newBuilding]);
         setNextId(nextId + 1);

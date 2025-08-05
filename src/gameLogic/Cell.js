@@ -28,7 +28,10 @@ export class Cell extends TemplatableObject {
     this.overwater_passable = template.overwater_passable;
     /** @type {boolean} */
     this.underwater_passable = template.underwater_passable;
+    /** @type {boolean} */
+    this.shallow_water_passable = template.shallow_water_passable || false;
     /** @type {number} */
-    this.consumes_movement = template.consumes_movement ?? 1; // Feature 3
+    this.consumes_movement = template.consumes_movement ?? 1;
   }
 }
+

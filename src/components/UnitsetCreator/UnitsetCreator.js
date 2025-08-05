@@ -5,15 +5,21 @@ import { ResourceSetContext } from '../../context/ResourceSetContext';
 import { ResearchSetContext } from '../../context/ResearchSetContext';
 import './UnitsetCreator.css';
 
-// Helper to create a resource set archive in memory
 const createResourceSetArchive = async (resourceSet) => {
     const zip = new JSZip();
-    const manifest = { name: resourceSet.name, resources: resourceSet.resources };
+    const assets = zip.folder("assets").folder("textures");
+    const manifestResources = resourceSet.resources.map(res => {
+        if(res.texture_path && (res.textureFile || res.textureBlob)) {
+            assets.file(res.texture_path, res.textureFile || res.textureBlob);
+        }
+        const { id, textureFile, textureUrl, textureBlob, ...manifestData } = res;
+        return manifestData;
+    });
+    const manifest = { name: resourceSet.name, resources: manifestResources };
     zip.file("manifest.json", JSON.stringify(manifest, null, 2));
     return await zip.generateAsync({ type: "blob" });
 };
 
-// Helper to create a research set archive in memory (which itself contains the resource set)
 const createResearchSetArchive = async (researchSet, resourceSet) => {
     const zip = new JSZip();
     const resourceSetBlob = await createResourceSetArchive(resourceSet);
@@ -26,34 +32,20 @@ const createResearchSetArchive = async (researchSet, resourceSet) => {
 
 const UnitEditorCard = ({ unit, onUpdate, onRemove, availableResources, availableResearch }) => {
     
-    const handleFieldChange = (field, value) => {
-        onUpdate({ ...unit, [field]: value });
-    };
-
-    const handleNumericChange = (field, value) => {
-        onUpdate({ ...unit, [field]: parseFloat(value) || 0 });
-    };
-    
-    const handleCheckboxChange = (field, checked) => {
-        onUpdate({ ...unit, [field]: checked });
-    };
-    
+    const handleFieldChange = (field, value) => onUpdate({ ...unit, [field]: value });
+    const handleNumericChange = (field, value) => onUpdate({ ...unit, [field]: parseFloat(value) || 0 });
+    const handleCheckboxChange = (field, checked) => onUpdate({ ...unit, [field]: checked });
     const handleResearchReqChange = (researchTypeId, isChecked) => {
-        const newReqs = isChecked
-            ? [...unit.requiresResearch, researchTypeId]
-            : unit.requiresResearch.filter(id => id !== researchTypeId);
+        const newReqs = isChecked ? [...unit.requiresResearch, researchTypeId] : unit.requiresResearch.filter(id => id !== researchTypeId);
         onUpdate({ ...unit, requiresResearch: newReqs });
     };
-
     const handleCostChange = (index, field, value) => {
         const newCost = [...unit.cost];
         newCost[index][field] = field === 'amount' ? parseFloat(value) || 0 : value;
         onUpdate({ ...unit, cost: newCost });
     };
-
     const handleAddCost = () => onUpdate({ ...unit, cost: [...unit.cost, { resourceTypeId: '', amount: 0 }] });
     const handleRemoveCost = (index) => onUpdate({ ...unit, cost: unit.cost.filter((_, i) => i !== index) });
-
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (file && file.type === "image/png") {
@@ -114,22 +106,32 @@ const UnitEditorCard = ({ unit, onUpdate, onRemove, availableResources, availabl
                 <div className="grid-input-group">
                     <label>Max Move Actions:</label><input type="number" min="0" value={unit.max_move_actions} onChange={(e) => handleNumericChange('max_move_actions', e.target.value)} />
                 </div>
-                 <div className="checkbox-grid-4-cols">
-                    <label><input type="checkbox" checked={unit.land_traversing} onChange={(e) => handleCheckboxChange('land_traversing', e.target.checked)} /> Land</label>
-                    <label><input type="checkbox" checked={unit.air_traversing} onChange={(e) => handleCheckboxChange('air_traversing', e.target.checked)} /> Air</label>
-                    <label><input type="checkbox" checked={unit.overwater_traversing} onChange={(e) => handleCheckboxChange('overwater_traversing', e.target.checked)} /> Overwater</label>
-                    <label><input type="checkbox" checked={unit.underwater_traversing} onChange={(e) => handleCheckboxChange('underwater_traversing', e.target.checked)} /> Underwater</label>
+                 <div className="checkbox-grid">
+                    <label><input type="checkbox" checked={unit.land_traversing} onChange={(e) => handleCheckboxChange('land_traversing', e.target.checked)} /> Traversing Land</label>
+                    <label><input type="checkbox" checked={unit.air_traversing} onChange={(e) => handleCheckboxChange('air_traversing', e.target.checked)} /> Traversing Air</label>
+                    <label><input type="checkbox" checked={unit.overwater_traversing} onChange={(e) => handleCheckboxChange('overwater_traversing', e.target.checked)} /> Traversing Overwater</label>
+                    <label><input type="checkbox" checked={unit.underwater_traversing} onChange={(e) => handleCheckboxChange('underwater_traversing', e.target.checked)} /> Traversing Underwater</label>
+                    <label><input type="checkbox" checked={unit.shallow_water_traversing} onChange={(e) => handleCheckboxChange('shallow_water_traversing', e.target.checked)} /> Traversing Shallow Water</label>
+                </div>
+                
+                <h4>Placement</h4>
+                <div className="checkbox-grid">
+                    <label><input type="checkbox" checked={unit.land_placed} onChange={(e) => handleCheckboxChange('land_placed', e.target.checked)} /> Can be placed on Land</label>
+                    <label><input type="checkbox" checked={unit.overwater_placed} onChange={(e) => handleCheckboxChange('overwater_placed', e.target.checked)} /> Can be placed on Overwater</label>
+                    <label><input type="checkbox" checked={unit.underwater_placed} onChange={(e) => handleCheckboxChange('underwater_placed', e.target.checked)} /> Can be placed on Underwater</label>
+                    <label><input type="checkbox" checked={unit.shallow_water_placed} onChange={(e) => handleCheckboxChange('shallow_water_placed', e.target.checked)} /> Can be placed on Shallow Water</label>
                 </div>
 
                 <h4>Carrier Abilities</h4>
                 <div className="grid-input-group">
                     <label>Carrier Capacity:</label><input type="number" min="0" value={unit.carrier_capability} onChange={(e) => handleNumericChange('carrier_capability', e.target.value)} />
                 </div>
-                <div className="checkbox-grid-4-cols">
+                <div className="checkbox-grid">
                     <label><input type="checkbox" checked={unit.can_carry_type_land} onChange={(e) => handleCheckboxChange('can_carry_type_land', e.target.checked)} /> Carries Land</label>
                     <label><input type="checkbox" checked={unit.can_carry_type_air} onChange={(e) => handleCheckboxChange('can_carry_type_air', e.target.checked)} /> Carries Air</label>
                     <label><input type="checkbox" checked={unit.can_carry_type_overwater} onChange={(e) => handleCheckboxChange('can_carry_type_overwater', e.target.checked)} /> Carries Overwater</label>
                     <label><input type="checkbox" checked={unit.can_carry_type_underwater} onChange={(e) => handleCheckboxChange('can_carry_type_underwater', e.target.checked)} /> Carries Underwater</label>
+                    <label><input type="checkbox" checked={unit.can_carry_type_shallow_water} onChange={(e) => handleCheckboxChange('can_carry_type_shallow_water', e.target.checked)} /> Carries Shallow Water</label>
                 </div>
                 
                 <h4>Requirements</h4>
@@ -153,7 +155,7 @@ const UnitsetCreator = ({ onReturnToMenu }) => {
     const [setName, setSetName] = useState("MyUnits");
     const [units, setUnits] = useState([]);
     const [nextId, setNextId] = useState(0);
-    const importInputRef = useRef(null); // Ref for the file input
+    const importInputRef = useRef(null);
 
     const handleAddUnit = () => {
         const newUnit = {
@@ -167,6 +169,11 @@ const UnitsetCreator = ({ onReturnToMenu }) => {
             air_traversing: false,
             overwater_traversing: false,
             underwater_traversing: false,
+            shallow_water_traversing: false,
+            land_placed: true,
+            overwater_placed: false,
+            underwater_placed: false,
+            shallow_water_placed: false,
             cost: [],
             build_time: 1,
             max_move_actions: 1,
@@ -180,6 +187,7 @@ const UnitsetCreator = ({ onReturnToMenu }) => {
             can_carry_type_air: false,
             can_carry_type_overwater: false,
             can_carry_type_underwater: false,
+            can_carry_type_shallow_water: false,
             isColonist: false,
         };
         setUnits([...units, newUnit]);
@@ -226,7 +234,6 @@ const UnitsetCreator = ({ onReturnToMenu }) => {
         saveAs(zipBlob, `${setName}.szus`);
     };
 
-    // THE FIX: New import handler function
     const handleImportSet = async (event) => {
         const file = event.target.files[0];
         if (!file) return;
@@ -234,7 +241,6 @@ const UnitsetCreator = ({ onReturnToMenu }) => {
         try {
             const zip = await JSZip.loadAsync(file);
 
-            // Load dependencies from the archive first
             const resourceSetFile = zip.file("resourceset.szrs");
             if (resourceSetFile) {
                 await loadResourceSetFromZip(await resourceSetFile.async("blob"));
@@ -249,7 +255,6 @@ const UnitsetCreator = ({ onReturnToMenu }) => {
                 throw new Error("Archive is missing dependency: researchset.szrsh");
             }
 
-            // Load the main unit manifest
             const manifestFile = zip.file("manifest.json");
             if (!manifestFile) throw new Error("manifest.json not found in unit set.");
             const manifest = JSON.parse(await manifestFile.async("string"));
@@ -258,7 +263,6 @@ const UnitsetCreator = ({ onReturnToMenu }) => {
             let currentId = 0;
             const importedUnits = (manifest.units || []).map(unitData => {
                 currentId++;
-                // Ensure all fields have default values for backwards compatibility
                 return {
                     id: currentId,
                     ...unitData,
@@ -284,10 +288,8 @@ const UnitsetCreator = ({ onReturnToMenu }) => {
                 <input type="text" value={setName} placeholder="Unit Set Name" onChange={(e) => setSetName(e.target.value)} />
                 <div className="button-group">
                     <button onClick={handleAddUnit}>Add New Unit</button>
-                    {/* THE FIX: Button is now active and wired up */}
                     <button onClick={() => importInputRef.current.click()}>Import & Edit</button>
                 </div>
-                {/* THE FIX: Hidden file input is added */}
                 <input type="file" ref={importInputRef} onChange={handleImportSet} style={{ display: 'none' }} accept=".szus" />
                 <button onClick={handleExport} disabled={units.length === 0}>Export to .szus</button>
                 <button onClick={onReturnToMenu} className="return-button">Return to Main Menu</button>

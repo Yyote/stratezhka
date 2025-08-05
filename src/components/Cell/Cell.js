@@ -5,26 +5,6 @@ import './Cell.css';
 const Cell = ({ id, cellData, entities, players, onMouseEnter, onMouseLeave, onMouseMove, onClick, onContextMenu }) => {
   const { resourceSet } = useContext(ResourceSetContext);
 
-  const getResourceTexture = (typeId) => {
-    if (!resourceSet || !resourceSet.resources) {
-        console.warn(`%c[Cell ${id}] ResourceSet not available yet.`, 'color: red');
-        return null;
-    }
-    const resource = resourceSet.resources.find(r => r.TypeId === typeId);
-    if (!resource) {
-        console.warn(`%c[Cell ${id}] getResourceTexture: Could not find resource with TypeId "${typeId}"`, 'color: red');
-        return null;
-    }
-    if (!resource.textureUrl) {
-        console.warn(`%c[Cell ${id}] getResourceTexture: Found resource "${typeId}" but it has no textureUrl.`, 'color: red', resource);
-    }
-    return resource.textureUrl;
-  };
-
-  if (entities?.cities.length > 0) {
-      console.log(`%c[Cell ${id}] Rendering with city for player ${entities.cities[0].playerId}`, 'color: green');
-  }
-
   const presentPlayerIds = useMemo(() => {
     const ids = new Set();
     if (entities) {
@@ -35,6 +15,10 @@ const Cell = ({ id, cellData, entities, players, onMouseEnter, onMouseLeave, onM
   }, [entities]);
 
   const getPlayerColor = (id) => players.find(p => p.id === id)?.color || 'grey';
+
+  const getResourceTexture = (typeId) => {
+    return resourceSet?.resources.find(r => r.TypeId === typeId)?.textureUrl || null;
+  };
 
   return (
     <div
