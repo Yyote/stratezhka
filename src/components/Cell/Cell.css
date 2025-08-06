@@ -16,9 +16,12 @@
   width: 100%;
   height: 100%;
   transition: background-color 0.15s ease-in-out;
+  pointer-events: none;
+  z-index: 2;
 }
 
-.unit-sprite {
+/* For non-road, non-city buildings */
+.entity-sprite {
   position: absolute;
   top: 0;
   left: 0;
@@ -27,6 +30,18 @@
   object-fit: contain;
   pointer-events: none;
   z-index: 5;
+}
+
+/* NEW: Specific class for roads to control layering */
+.road-sprite {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  z-index: 3; /* Lower than normal buildings */
 }
 
 .city-marker {
@@ -40,6 +55,7 @@
   opacity: 0.85;
   box-shadow: 0 0 5px rgba(0,0,0,0.5);
   pointer-events: none;
+  z-index: 6; /* Highest z-index */
 }
 
 .flag-container {
@@ -60,7 +76,7 @@
   position: relative;
 }
 
-.player-flag::before { /* The flagpole */
+.player-flag::before {
   content: '';
   position: absolute;
   left: -8px;
@@ -71,7 +87,6 @@
   box-shadow: 0 0 2px black;
 }
 
-/* NEW: Styles for resource icons on the map */
 .resource-container {
     position: absolute;
     top: 2px;
@@ -80,7 +95,7 @@
     grid-template-columns: 1fr 1fr;
     gap: 2px;
     width: 24px;
-    pointer-events: none; /* Let clicks pass through to the cell */
+    pointer-events: none;
 }
 
 .resource-icon {

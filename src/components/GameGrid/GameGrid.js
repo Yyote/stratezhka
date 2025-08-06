@@ -2,11 +2,7 @@ import React, { useMemo } from 'react';
 import Cell from '../Cell/Cell';
 import './GameGrid.css';
 
-let gridRenderCount = 0;
-const GameGrid = ({ mapData, tileset, units = [], cities = [], players = [], onCellClick, onCellMouseEnter, onCellMouseLeave, onCellMouseMove, onCellContextMenu, editorMode = false }) => {
-  gridRenderCount++;
-  console.log(`%c[GameGrid] Render #${gridRenderCount}. Mode: ${editorMode ? 'Editor' : 'Game'}. Received ${cities.length} cities.`, 'color: blue', cities);
-
+const GameGrid = ({ mapData, tileset, units = [], buildings = [], players = [], onCellClick, onCellMouseEnter, onCellMouseLeave, onCellMouseMove, onCellContextMenu, editorMode = false }) => {
   const tileMap = useMemo(() => {
     if (!tileset) return new Map();
     return new Map(tileset.tiles.map(t => [t.type_name, t]));
@@ -14,13 +10,14 @@ const GameGrid = ({ mapData, tileset, units = [], cities = [], players = [], onC
 
   const entitiesGrid = useMemo(() => {
     if (editorMode || !mapData) return null;
-    console.log('%c[GameGrid] Recalculating entitiesGrid with cities:', 'color: blue', cities);
-    const grid = mapData.grid.map(row => row.map(() => ({ units: [], cities: [] })));
-    units.forEach(unit => { if (grid[unit.row]?.[unit.col]) grid[unit.row][unit.col].units.push(unit); });
-    cities.forEach(city => { if (grid[city.row]?.[city.col]) grid[city.row][city.col].cities.push(city); });
-    console.log('%c[GameGrid] entitiesGrid calculation complete.', 'color: blue', grid.flat().filter(c => c.cities.length > 0));
+
+    const grid = mapData.grid.map(row => row.map(() => ({ units: [], buildings: [] })));
+    
+    units.forEach(unit => { if (grid[unit.pos.row]?.[unit.pos.col]) grid[unit.pos.row][unit.pos.col].units.push(unit); });
+    buildings.forEach(building => { if (grid[building.pos.row]?.[building.pos.col]) grid[building.pos.row][building.pos.col].buildings.push(building); });
+    
     return grid;
-  }, [mapData, units, cities, editorMode]);
+  }, [mapData, units, buildings, editorMode]);
 
 
   if (!mapData || !tileset) {

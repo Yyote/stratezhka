@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import './PlayerUI.css';
 
-const PlayerUI = ({ players, currentPlayerId, resourceSet, buildingSet, onFinishTurn, onSwitchPlayer, onInitiatePlacement }) => {
+const PlayerUI = ({ players, currentPlayerId, resourceSet, onFinishTurn, onSwitchPlayer }) => {
   const currentPlayer = players.find(p => p.id === currentPlayerId);
   const isTurnFinished = currentPlayer?.isTurnFinished || false;
 
@@ -9,13 +9,6 @@ const PlayerUI = ({ players, currentPlayerId, resourceSet, buildingSet, onFinish
       if (!resourceSet) return new Map();
       return new Map(resourceSet.resources.map(r => [r.TypeId, r]));
   }, [resourceSet]);
-  
-  const completedResearchSet = useMemo(() => new Set(currentPlayer?.completedResearch), [currentPlayer]);
-
-  const canAffordAndResearch = (building) => {
-    if (!building.requiresResearch || building.requiresResearch.length === 0) return true;
-    return building.requiresResearch.every(reqId => completedResearchSet.has(reqId));
-  };
 
   const playerResources = currentPlayer?.resources || {};
 
@@ -36,18 +29,6 @@ const PlayerUI = ({ players, currentPlayerId, resourceSet, buildingSet, onFinish
                 </div>
             );
         })}
-      </div>
-
-      <div className="build-menu">
-          <span>Build:</span>
-          {buildingSet?.buildings.map(building => {
-              const canBuild = canAffordAndResearch(building);
-              return (
-                  <button key={building.TypeId} onClick={() => onInitiatePlacement(building.TypeId)} disabled={!canBuild} title={building.name}>
-                      {building.name}
-                  </button>
-              );
-          })}
       </div>
 
       <div className="player-actions">

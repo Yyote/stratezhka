@@ -3,7 +3,7 @@
   right: 0;
   top: 0;
   height: 100vh;
-  width: 300px;
+  width: 320px;
   background-color: #20232a;
   color: white;
   z-index: 900;
@@ -16,6 +16,18 @@
     top: 10px;
     right: 15px;
     font-size: 1.5rem;
+    background: transparent;
+    border: none;
+    color: #aaa;
+    cursor: pointer;
+}
+.close-btn:hover {
+    color: white;
+}
+.details-section h3 {
+    border-bottom: 1px solid #61dafb;
+    padding-bottom: 5px;
+    margin-top: 0;
 }
 .details-section h4 {
     border-bottom: 1px solid #61dafb;
@@ -42,4 +54,52 @@
     border-radius: 50%;
     display: inline-block;
     flex-shrink: 0;
+}
+
+/* Build Menu Styles */
+.build-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.build-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background-color: #282c34;
+    border: 1px solid #4a5160;
+    border-radius: 5px;
+    padding: 8px;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+.build-item:hover {
+    border-color: #61dafb;
+}
+.build-item.disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+.build-item-texture {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+.build-item-info {
+    flex-grow: 1;
+}
+.build-item-info strong {
+    font-size: 1.1em;
+}
+.build-item-cost {
+    font-size: 0.8em;
+    display: flex;
+    gap: 8px;
+}
+.cost-affordable {
+    color: white;
+}
+.cost-unaffordable {
+    color: #ff5555;
 }
